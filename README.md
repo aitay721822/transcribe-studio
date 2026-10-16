@@ -74,6 +74,19 @@ npm run package:mac
 
 產物位於 `release/`。macOS 僅產生 arm64 的 DMG／ZIP，封裝時會檢查 FFmpeg 與 Claude runtime 的架構。正式 Mac 簽章、公證與 CI 設定見[使用與開發參考](docs/reference.md#macos-建置與驗收)。
 
+### 使用 tag 發布版本
+
+版本 tag 須與 `package.json` 一致，例如目前版本為 `0.4.1`：
+
+```sh
+git tag -a v0.4.1 -m "Release 0.4.1"
+git push origin v0.4.1
+```
+
+推送 `v0.4.1` 或 `0.4.1` 形式的 tag 後，GitHub Actions 會驗證版本、執行測試並建置 Windows 安裝版／免安裝版與 Mac arm64 DMG／ZIP。兩個平台皆成功後，才會在 [Releases](https://github.com/aitay721822/transcribe-studio/releases) 建立版本頁、上傳四個安裝檔與 `SHA256SUMS.txt`，並產生版本說明。帶有 `-beta.1` 等後綴的版本會標示為預先發布。
+
+Tag 發布預設不使用 Mac 簽章憑證；有正式簽章需求時，使用手動 workflow 的 `signed_release` 流程。分支與 PR 驗證不會建立 Release。
+
 ### 開發檢查
 
 | 指令 | 用途 |
