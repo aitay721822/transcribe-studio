@@ -6,24 +6,15 @@ const path = require('node:path');
 const { spawn } = require('node:child_process');
 const { EventEmitter } = require('node:events');
 const { PassThrough } = require('node:stream');
-const { bundledClaudeModule } = require('../../dist/services/agents/bundled.cjs');
+const { findClaudeExecutable } = require('../../dist/ai/adapters/claude.cjs');
 const { posixCommand, prepareRuntimePath } = require('../../dist/services/agents/posix.cjs');
 const { executableCandidates } = require('../../dist/services/agents/executable.cjs');
 const { stopChild } = require('../../dist/transport/runtime/process.cjs');
 
-test('bundled Claude resolves native Darwin and Windows architectures', () => {
-  for (const arch of ['arm64', 'x64']) {
-    assert.equal(
-      bundledClaudeModule('win32', arch),
-      `@anthropic-ai/claude-agent-sdk-win32-${arch}/claude.exe`
-    );
-  }
-  assert.equal(
-    bundledClaudeModule('darwin', 'arm64'),
-    '@anthropic-ai/claude-agent-sdk-darwin-arm64/claude'
-  );
-  assert.throws(() => bundledClaudeModule('darwin', 'x64'), /沒有隨附/);
-  assert.throws(() => bundledClaudeModule('darwin', 'ia32'), /沒有隨附/);
+test('Claude requires an external CLI and explains missing installations', async () => {
+  const fixture = path.resolve('tests/fixtures/agent-cli.cjs');
+  assert.equal(await findClaudeExecutable(fixture), fixture);
+  await assert.rejects(findClaudeExecutable(path.join(fixture, 'missing')), /請先安裝 Claude Code/);
 });
 
 test('Finder-like empty PATH discovers nvm and executes extensionless Node entry with intact arguments', async () => {

@@ -2,6 +2,7 @@ const { spawnSync } = require('node:child_process');
 const { packagedExecutable } = require('./executable.cjs');
 
 for (const script of [
+  'scripts/ui/platform/size.cjs',
   'scripts/ui/platform/desktop.cjs',
   'scripts/ui/design/primitives.cjs',
   'scripts/ui/design/layout.cjs',

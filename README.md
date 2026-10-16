@@ -16,7 +16,7 @@ Transcribe Studio 是以專案為中心的桌面會議記錄助手，使用 Type
 
 | 平台 | 支援範圍 |
 | --- | --- |
-| Windows | x64 安裝版與免安裝版；可擷取指定播放裝置與麥克風 |
+| Windows | x64 安裝版；可擷取指定播放裝置與麥克風 |
 | macOS | Apple Silicon（arm64），macOS 13 以上；原生系統音訊需 macOS 14.2 以上 |
 
 macOS 的實際權限、音訊裝置與正式簽章仍需實機驗收。辨識品質取決於錄音與所選模型。
@@ -30,8 +30,7 @@ macOS 的實際權限、音訊裝置與正式簽章仍需實機驗收。辨識�
 | 平台 | 檔案 | 使用方式 |
 | --- | --- | --- |
 | Windows x64 | `Transcribe Studio Setup <版本>.exe` | 執行安裝程式，可選安裝位置並建立捷徑 |
-| Windows x64 免安裝版 | `Transcribe Studio <版本>.exe` | 直接執行；需由維護者另行打包 |
-| macOS arm64 | `.dmg` 或 `.zip` | 開啟 DMG 將應用程式拖入 Applications，或解壓 ZIP 後開啟 |
+| macOS arm64 | `.dmg` | 開啟 DMG 將應用程式拖入 Applications |
 
 一般本機建置未簽章／公證；正式 Mac 發布可透過簽章與公證流程產生套件。Windows 解除安裝會保留會議資料與設定。
 
@@ -49,6 +48,8 @@ npm start
 
 `npm start` 會先檢查並編譯程式，再啟動 Electron。
 
+預設建置會壓縮 JavaScript 並使用 React 正式版，不內嵌 source map；需要除錯時，可設定環境變數 `STUDIO_DEBUG_BUILD=1` 再建置。安裝檔只攜帶執行時相依套件與英文／繁體中文 Electron 語系，保留 FFmpeg，不隨附 Claude Code 執行檔。
+
 ### 第一次設定
 
 首次啟動會開啟設定導覽，完成以下設定後即可進入工作區：
@@ -59,20 +60,19 @@ npm start
 
 「離線辨識」指上傳音檔或音訊分段的轉錄模式；是否能完全離線，取決於你是否使用本機服務。外部 API 可能需要網路並產生服務費用。
 
+選用 Claude 時，請先依 [Claude Code 官方說明](https://code.claude.com/docs/en/setup)安裝 CLI。API 與 CLI 登入模式皆需要本機執行檔；安裝後重新偵測，或在設定中指定路徑。CLI 登入模式另需執行 `claude auth login`。使用 OpenAI API 不需要安裝 Claude。
+
 ### 自行打包
 
 ```sh
 # Windows x64 安裝版
 npm run package
 
-# Windows x64 免安裝版
-npm run package:portable
-
 # Apple Silicon Mac：須在 Mac 上執行
 npm run package:mac
 ```
 
-產物位於 `release/`。macOS 僅產生 arm64 的 DMG／ZIP，封裝時會檢查 FFmpeg 與 Claude runtime 的架構。正式 Mac 簽章、公證與 CI 設定見[使用與開發參考](docs/reference.md#macos-建置與驗收)。
+產物位於 `release/`，僅提供 Windows 安裝程式與 Mac arm64 DMG。Mac 封裝時會檢查 FFmpeg 的架構。正式 Mac 簽章、公證與 CI 設定見[使用與開發參考](docs/reference.md#macos-建置與驗收)。
 
 ### 使用 tag 發布版本
 
@@ -83,7 +83,7 @@ git tag -a v0.4.1 -m "Release 0.4.1"
 git push origin v0.4.1
 ```
 
-推送 `v0.4.1` 或 `0.4.1` 形式的 tag 後，GitHub Actions 會驗證版本、執行測試並建置 Windows 安裝版／免安裝版與 Mac arm64 DMG／ZIP。兩個平台皆成功後，才會在 [Releases](https://github.com/aitay721822/transcribe-studio/releases) 建立版本頁、上傳四個安裝檔與 `SHA256SUMS.txt`，並產生版本說明。帶有 `-beta.1` 等後綴的版本會標示為預先發布。
+推送 `v0.4.1` 或 `0.4.1` 形式的 tag 後，GitHub Actions 會驗證版本、執行測試並建置 Windows 安裝程式與 Mac arm64 DMG。兩個平台皆成功後，才會在 [Releases](https://github.com/aitay721822/transcribe-studio/releases) 建立版本頁、上傳兩個安裝檔與 `SHA256SUMS.txt`，並產生版本說明。帶有 `-beta.1` 等後綴的版本會標示為預先發布。
 
 Tag 發布預設不使用 Mac 簽章憑證；有正式簽章需求時，使用手動 workflow 的 `signed_release` 流程。分支與 PR 驗證不會建立 Release。
 

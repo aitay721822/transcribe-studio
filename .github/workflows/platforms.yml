@@ -38,10 +38,8 @@ jobs:
       - if: runner.os == 'Windows'
         run: npm run test:ui
       - if: runner.os == 'Windows' && startsWith(github.ref, 'refs/tags/')
-        name: Build Windows installer and portable executable
-        run: |
-          node scripts/build/package.cjs
-          node scripts/build/package.cjs portable
+        name: Build Windows installer
+        run: node scripts/build/package.cjs
       - if: runner.os == 'macOS'
         run: npm run test:ui:platform
       - if: runner.os == 'macOS' && !inputs.signed_release
@@ -68,9 +66,8 @@ jobs:
           name: installers-${{ matrix.os }}
           if-no-files-found: error
           path: |
-            release/*.exe
+            release/Transcribe Studio Setup *.exe
             release/*.dmg
-            release/*.zip
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -78,7 +75,6 @@ jobs:
           if-no-files-found: ignore
           path: |
             release/*.dmg
-            release/*.zip
             output/playwright/*.png
 
   publish:

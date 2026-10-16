@@ -33,7 +33,11 @@ test('release tags must match the package version, including prereleases', () =>
 test('release assets require both platforms and checksum every installer with spaces intact', async (t) => {
   const directory = await fixture(t);
   const files = await releaseAssets(directory, '0.4.1');
-  assert.equal(files.length, 5);
+  assert.equal(files.length, 3);
+  assert.deepEqual(artifactNames('0.4.1'), [
+    'Transcribe Studio Setup 0.4.1.exe',
+    'Transcribe Studio 0.4.1-arm64.dmg',
+  ]);
   const lines = (await fs.readFile(path.join(directory, 'SHA256SUMS.txt'), 'utf8'))
     .trim()
     .split('\n');

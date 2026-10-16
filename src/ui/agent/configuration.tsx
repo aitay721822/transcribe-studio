@@ -99,9 +99,7 @@ export function AgentFields({
           backend === 'codex' ? 'Codex CLI 路徑（選填）' : 'Claude Code CLI 路徑（選填）',
           prefix ? 'cli-path' : `${backend}-path`,
           backend === 'codex' ? llm.codexPath : llm.claudePath,
-          mode === 'cli'
-            ? '留白自動尋找本機 CLI。'
-            : '留白自動尋找 CLI；Claude 可使用隨附 runtime。'
+          '請先安裝 CLI；留白自動尋找本機安裝，或指定執行檔路徑。'
         )}
       {local && mode === 'cli' && (
         <p className="help">

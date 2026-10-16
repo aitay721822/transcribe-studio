@@ -10,12 +10,7 @@ function validateTag(tag, version) {
 }
 
 function artifactNames(version) {
-  return [
-    `Transcribe Studio Setup ${version}.exe`,
-    `Transcribe Studio ${version}.exe`,
-    `Transcribe Studio ${version}-arm64.dmg`,
-    `Transcribe Studio ${version}-arm64.zip`,
-  ];
+  return [`Transcribe Studio Setup ${version}.exe`, `Transcribe Studio ${version}-arm64.dmg`];
 }
 
 async function releaseAssets(directory, version) {

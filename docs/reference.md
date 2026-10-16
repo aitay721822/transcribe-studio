@@ -20,7 +20,7 @@ npm run test:ui
 npm run package
 ```
 
-`npm start` 先將 TypeScript 編譯至 dist，再啟動 Electron。`npm run package` 產生 Windows x64 安裝程式 `release/Transcribe Studio Setup 0.4.1.exe`，支援繁體中文／英文、選擇安裝位置、桌面及開始功能表捷徑，並註冊 Windows 解除安裝。預設安裝給目前使用者，也可選擇所有使用者；解除安裝保留會議資料與設定。`npm run package:portable` 仍可產生免安裝版 `release/Transcribe Studio 0.4.1.exe`。`npm run check` 執行 Biome 格式與 lint 檢查（禁止 `any`／`@ts-ignore`）、TypeScript 檢查（`noImplicitAny`、`useUnknownInCatchVariables`）與來源結構驗證：每個文字來源檔最多 500 行，每個來源資料夾最多 10 個檔案／10 個子資料夾。`npm run lint` 執行 Biome 建議的 style 規則（警告也會失敗），並檢查 import 區塊後、函式與方法之間恰好一個空白列；字串插值使用 template literal，數值加法保留。`npm run format` 同時自動整理這些間距，並依 `config/biome.json` 格式化 TypeScript、JavaScript、CSS 與 JSON；排除相依套件、編譯產物與 lockfile。應用未設定 code signing。
+`npm start` 先將 TypeScript 編譯至 dist，再啟動 Electron。`npm run package` 產生 Windows x64 安裝程式 `release/Transcribe Studio Setup 0.4.1.exe`，支援繁體中文／英文、選擇安裝位置、桌面及開始功能表捷徑，並註冊 Windows 解除安裝。預設安裝給目前使用者，也可選擇所有使用者；解除安裝保留會議資料與設定。`npm run check` 執行 Biome 格式與 lint 檢查（禁止 `any`／`@ts-ignore`）、TypeScript 檢查（`noImplicitAny`、`useUnknownInCatchVariables`）與來源結構驗證：每個文字來源檔最多 500 行，每個來源資料夾最多 10 個檔案／10 個子資料夾。`npm run lint` 執行 Biome 建議的 style 規則（警告也會失敗），並檢查 import 區塊後、函式與方法之間恰好一個空白列；字串插值使用 template literal，數值加法保留。`npm run format` 同時自動整理這些間距，並依 `config/biome.json` 格式化 TypeScript、JavaScript、CSS 與 JSON；排除相依套件、編譯產物與 lockfile。應用未設定 code signing。
 
 UI 全面改為 React／TSX，包含頁面、dialog、搜尋、選單與設定導覽；使用 Tailwind v4 與 shadcn/ui 的 Button、Input、Textarea、Checkbox、Progress、Slider（Radix），以及 React 可搜尋 Select。共用語意色彩對應晨光、夜間、森林、海灣、石墨、暖砂、玫瑰與紫藤八款主題，並可跟隨系統，保留透明模糊與 rounded layout。欄位驗證錯誤統一使用 error 語意紅色，隨目前主題切換。會議來源面板至少 300px、Agent 面板至少 360px、會議紀錄至少 360px，空間不足時上下排列；標題、分頁與快捷操作維持單行。側欄品牌僅顯示 icon，語音辨識分頁外框與 Tab 按鈕皆採圓角。設定在 `src/ui/components.json`；可用 `npx shadcn@latest info --cwd src/ui` 檢查元件與解析路徑。Tailwind CSS 由 PostCSS 於建置時編譯，不使用 CDN。可見操作按鈕共用 Button；收合區塊使用統一的箭頭與焦點樣式並保留原生鍵盤語意。錄音播放器採用相同元件，提供播放／暫停、進度拖曳、音量、靜音及倍速；參考路徑欄位也使用共用 Input 與可搜尋 Select。
 
@@ -206,7 +206,7 @@ Electron 44 需要 macOS 13 以上。原生系統音訊目前以 macOS 14.2 以�
 系統音訊使用 Electron 原生擷取與可用的系統選擇器。持續無聲僅顯示診斷提示，不把正常靜音誤判為失敗或中止錄音。
 
 macOS 僅支援 Apple Silicon（arm64）。在 Apple Silicon Mac 安裝 Node.js 24，執行 `npm ci --include=optional`、`npx --no-install install-electron`、`npm test`，再執行 `npm run package:mac` 或 `npm run package:mac:arm64`。
-FFmpeg 與 Claude runtime 的 arm64 架構會在封裝後以 lipo 檢查，原生執行檔保留執行權限並置於 asar.unpacked。輸出為 DMG 與 ZIP，圖示由同一份 SVG 產生 ICNS。
+FFmpeg 的 arm64 架構會在封裝後以 lipo 檢查，原生執行檔保留執行權限並置於 asar.unpacked。輸出為 arm64 DMG，圖示由同一份 SVG 產生 ICNS。
 Finder 啟動時會補入已知 Homebrew、nvm、Volta 等安裝位置；Node CLI 的 symlink／shebang 入口透過應用 Node runtime 啟動，不執行 shell 設定檔。
 Mac 快捷鍵顯示 Command；標記文字與建立會議使用 Command Shift M，專案音檔辨識使用 Command Shift I。Windows 保留 Ctrl Alt 組合。
 Mac 標題列使用原生視窗按鈕，提供原生編輯選單；Command Q 經由既有關閉與儲存流程。
@@ -218,7 +218,7 @@ Windows 的憑證密文不能直接在 Mac 解密。Mac 正式版本應使用一
 `.github/workflows/platforms.yml` 提供 Windows 與 macOS arm64 的單元／平台 UI／Mac 封裝與封裝後 Claude 測試。
 CI 使用虛擬資料驗證邏輯；實機驗收另需檢查麥克風、系統音訊、混音、拒絕／撤銷權限、多螢幕與裝置拔除，並確認錄音中暫停、取消及退出不殘留 CLI。
 一般 Mac 驗證建置停用簽章身分自動偵測，不傳入憑證或公證 secrets。正式建置設定 `STUDIO_MAC_RELEASE=1`，會先檢查必要設定，再強制要求簽章與公證。CI 手動執行的 `signed_release` 使用 repository secrets：`MAC_CSC_LINK`（憑證檔案或其 Base64 內容）、`MAC_CSC_KEY_PASSWORD`（憑證密碼）、`APPLE_ID`、`APPLE_APP_SPECIFIC_PASSWORD`、`APPLE_TEAM_ID`；不可將憑證值寫進專案。無密碼憑證可留空密碼；缺少憑證或公證帳號設定時，正式建置會直接報錯，不會降級成未簽章套件。
-`npm run test:ui:platform` 驗證平台介面與真實系統加密；封裝後以 `npm run test:packaged` 驗證 .app、加密設定與隨附 Claude 工具回合。
+`npm run test:ui:platform` 驗證平台介面與真實系統加密；封裝後以 `npm run test:packaged` 驗證 .app、加密設定與外部 Claude CLI 工具回合。
 
 自動測試涵蓋 SQLite 持久化／版本衝突、工作區路徑隔離、字幕解析、DOCX、WebSocket 串流、MCP stdio 工具與 Agent function loop／取消。Electron UI 測試使用隔離測試資料目錄及模擬麥克風，驗證專案、編輯、自動儲存、版本歷史、主題、錄音、暫停／繼續、播放、WebSocket PCM、WebRTC signaling／data channel、Agent 修訂提案與衝突，以及 native DOCX 匯出。
 

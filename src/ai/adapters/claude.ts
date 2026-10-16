@@ -4,7 +4,6 @@ import path from 'node:path';
 import { agentAuth, agentModel } from '../../domain/agents/auth';
 import type { ImageData } from '../../domain/models';
 import { notesSchema, parseNotes } from '../../harness/prompt';
-import { bundledClaude } from '../../services/agents/bundled';
 import { agentEnv, agentHome } from '../../services/agents/config';
 import { agentError } from '../../services/agents/errors';
 import { executableCandidates } from '../../services/agents/executable';
@@ -13,11 +12,12 @@ import { meetingGateway } from '../../transport/claude/gateway';
 import { ClaudeProcess } from '../../transport/claude/process';
 import type { HarnessAdapter, HarnessContext } from '../contracts';
 
-export async function findClaudeExecutable(configured = '', allowBundled = false) {
+export async function findClaudeExecutable(configured = '') {
   const [local] = await executableCandidates('claude', configured);
   if (local) return local;
-  if (!configured && allowBundled) return bundledClaude();
-  throw new Error('找不到 Claude Code CLI，請安裝並執行 claude auth login，或指定 CLI 路徑。');
+  throw new Error(
+    '找不到 Claude Code CLI，請先安裝 Claude Code，再重新偵測或指定 CLI 路徑。CLI 登入模式另需執行 claude auth login。'
+  );
 }
 
 export class ClaudeAdapter implements HarnessAdapter {
@@ -32,7 +32,7 @@ export class ClaudeAdapter implements HarnessAdapter {
     const llm = ctx.settings.llm;
     const cli = agentAuth(llm, 'claude') === 'cli';
     const model = agentModel(llm, 'claude');
-    const executable = await findClaudeExecutable(llm.claudePath, !cli);
+    const executable = await findClaudeExecutable(llm.claudePath);
     const home = agentHome(llm, 'claude', ctx.runtimeDir, ctx.project.id);
     const cwd = path.join(ctx.runtimeDir, 'workspaces', ctx.project.id);
     await fs.mkdir(cwd, { recursive: true });

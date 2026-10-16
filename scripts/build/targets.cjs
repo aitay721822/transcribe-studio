@@ -1,7 +1,6 @@
 function packageArguments(target, arch, platform = process.platform, release = false) {
   const selected = target || (platform === 'darwin' ? 'mac' : 'nsis');
-  if (!['mac', 'nsis', 'portable'].includes(selected))
-    throw new Error('Unsupported package target');
+  if (!['mac', 'nsis'].includes(selected)) throw new Error('Unsupported package target');
   const cpu = arch || (selected === 'mac' ? 'arm64' : 'x64');
   if (!['arm64', 'x64'].includes(cpu)) throw new Error('Only arm64 and x64 are supported');
   if (selected === 'mac' && cpu !== 'arm64')
@@ -25,7 +24,7 @@ function packageArguments(target, arch, platform = process.platform, release = f
 function packageEnvironment(platform = process.platform, release = false, source = process.env) {
   const env = {
     ...source,
-    ELECTRON_BUILDER_COMPRESSION_LEVEL: source.ELECTRON_BUILDER_COMPRESSION_LEVEL || '5',
+    ELECTRON_BUILDER_COMPRESSION_LEVEL: source.ELECTRON_BUILDER_COMPRESSION_LEVEL || '9',
   };
   if (platform !== 'darwin') return env;
   if (release) {

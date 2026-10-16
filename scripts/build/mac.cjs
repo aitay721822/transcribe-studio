@@ -2,7 +2,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const childProcess = require('node:child_process');
 
-/** Fail before distribution if an app contains a foreign FFmpeg or Claude binary. */
+/** Fail before distribution if the app contains a foreign FFmpeg binary. */
 module.exports = async function verifyMacBundle(context) {
   if (context.electronPlatformName !== 'darwin') return;
   if (context.arch !== 3) throw new Error('macOS packages only support Apple Silicon (arm64)');
@@ -13,10 +13,7 @@ module.exports = async function verifyMacBundle(context) {
     'Contents/Resources'
   );
   const dependencies = path.join(resources, 'app.asar.unpacked/node_modules');
-  const binaries = [
-    path.join(dependencies, 'ffmpeg-static/ffmpeg'),
-    path.join(dependencies, '@anthropic-ai/claude-agent-sdk-darwin-arm64/claude'),
-  ];
+  const binaries = [path.join(dependencies, 'ffmpeg-static/ffmpeg')];
   for (const binary of binaries) {
     await fs.access(binary);
     await fs.chmod(binary, 0o755);

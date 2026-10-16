@@ -22,7 +22,7 @@
 
 語音辨識或 Agent 缺少必要欄位時，啟動進入三步設定導覽；未找到所選本機 CLI 時亦會引導設定。可從設定頁重新開啟導覽。必要欄位檢查不代表已通過遠端認證，實際模型權限／連線在使用服務時確認。
 
-`services/agents/executable.ts` 掃描 PATH、Windows PATHEXT、npm 目錄與常見安裝路徑；標準 npm shim 解析為套件 bin 後直接啟動，不執行 shell 字串。可透過設定路徑或 `STUDIO_CODEX_PATH`／`STUDIO_CLAUDE_PATH` 指定。`detection.ts` 對 Codex 與 Claude Code 並行探測 `--version`，每候選最多 4 秒、每後端最多 3 個，並限制輸出。UI 分別顯示安裝、可啟動與 CLI 登入狀態。Codex 透過 app-server 的 `account/read` 與 `model/list` 偵測；Claude 使用 `auth status --json`。不讀取或複製登入憑證檔案。偵測不到認證格式時顯示未知，不將版本成功誤判為已登入。只有 Claude API 模式可退回隨附 runtime。
+`services/agents/executable.ts` 掃描 PATH、Windows PATHEXT、npm 目錄與常見安裝路徑；標準 npm shim 解析為套件 bin 後直接啟動，不執行 shell 字串。可透過設定路徑或 `STUDIO_CODEX_PATH`／`STUDIO_CLAUDE_PATH` 指定。`detection.ts` 對 Codex 與 Claude Code 並行探測 `--version`，每候選最多 4 秒、每後端最多 3 個，並限制輸出。UI 分別顯示安裝、可啟動與 CLI 登入狀態。Codex 透過 app-server 的 `account/read` 與 `model/list` 偵測；Claude 使用 `auth status --json`。不讀取或複製登入憑證檔案。偵測不到認證格式時顯示未知，不將版本成功誤判為已登入。Claude 的 API 與 CLI 模式皆需先安裝外部 Claude Code；Studio 不隨附執行檔。
 
 參考：[Multica 的公開原始碼](https://github.com/multica-ai/multica/blob/main/server/internal/daemon/agents_probe.go)、[DeepWiki 本機偵測分析](https://deepwiki.com/search/summarize-local-agent-cli-disc_52e9de4d-82be-46b9-93ea-54e1de92b210)。本應用沿用其 PATH／常見位置／有界探測概念，新增 CLI 登入與 API key 兩種明確模式，連線失敗不自動切換計費方式。
 

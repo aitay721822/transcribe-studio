@@ -6,6 +6,7 @@ const { compileBranding } = require('./branding.cjs');
 const { compileWindowsHost } = require('./windows.cjs');
 
 const root = path.resolve(__dirname, '../..');
+const debug = process.env.STUDIO_DEBUG_BUILD === '1';
 process.chdir(root);
 
 async function main() {
@@ -53,7 +54,6 @@ async function main() {
     'services/security/settings',
     'services/security/recovery',
     'services/agents/posix',
-    'services/agents/bundled',
     'services/platform/media',
     'transport/runtime/process',
     'ui/application/platform/shortcuts',
@@ -102,7 +102,9 @@ async function main() {
     format: 'cjs',
     target: 'node22',
     packages: 'external',
-    sourcemap: 'inline',
+    sourcemap: debug ? 'inline' : false,
+    minify: !debug,
+    keepNames: true,
     outExtension: { '.js': '.cjs' },
   });
   await esbuild.build({
@@ -117,7 +119,9 @@ async function main() {
     platform: 'browser',
     format: 'esm',
     target: 'chrome140',
-    sourcemap: 'inline',
+    sourcemap: debug ? 'inline' : false,
+    minify: !debug,
+    define: { 'process.env.NODE_ENV': JSON.stringify(debug ? 'development' : 'production') },
   });
   await fs.mkdir('dist/ui/styles', { recursive: true });
   await fs.copyFile('src/ui/index.html', 'dist/ui/index.html');

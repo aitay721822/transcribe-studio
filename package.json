@@ -11,7 +11,6 @@
     "check": "npm run format:check && npm run typecheck && node scripts/checks/structure.cjs",
     "test:ui": "npm run build && node scripts/ui/smoke.cjs && node scripts/ui/responsive.cjs && node scripts/ui/project-editor.cjs && node scripts/ui/search/palette.cjs && node scripts/ui/projects/overview.cjs && node scripts/ui/projects/workspace.cjs && node scripts/ui/meetings/lifecycle.cjs && node scripts/ui/meetings/annotations.cjs && node scripts/ui/setup/guidance.cjs && node scripts/ui/setup/connections.cjs && node scripts/ui/setup/devices.cjs && node scripts/ui/setup/playback.cjs && node scripts/ui/asr/services.cjs && node scripts/ui/asr/processing.cjs && node scripts/ui/asr/tasks.cjs && node scripts/ui/asr/recovery.cjs && node scripts/ui/setup/queue.cjs && node scripts/ui/design/primitives.cjs && node scripts/ui/design/layout.cjs && node scripts/ui/design/react.cjs && node scripts/ui/design/typography.cjs && node scripts/ui/design/settings.cjs && node scripts/ui/motion/interactions.cjs && node scripts/ui/agents/cli.cjs && node scripts/ui/agents/activity.cjs && node scripts/ui/agents/context.cjs && node scripts/ui/projects/files.cjs && node scripts/ui/agents/session.cjs && node scripts/ui/security/credentials.cjs && node scripts/ui/platform/desktop.cjs",
     "package": "npm run build && node scripts/build/package.cjs",
-    "package:portable": "npm run build && node scripts/build/package.cjs portable",
     "build": "npm run check && node scripts/build/compile.cjs",
     "typecheck": "tsc --noEmit",
     "format": "node scripts/checks/style.cjs --write && biome check --write --config-path=config/biome.json . && node scripts/checks/style.cjs",
@@ -23,19 +22,10 @@
     "test:packaged": "node scripts/ui/platform/packaged.cjs"
   },
   "dependencies": {
-    "@anthropic-ai/claude-agent-sdk": "^0.3.296",
     "@modelcontextprotocol/sdk": "^1.32.1",
     "ajv": "^8.17.1",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
     "docx": "^9.10.0",
     "ffmpeg-static": "5.3.0",
-    "motion": "^14.2.0",
-    "radix-ui": "^1.8.1",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0",
-    "react-resizable-panels": "^4.14.5",
-    "tailwind-merge": "^3.7.0",
     "ws": "^8.18.0",
     "yauzl": "^3.4.0",
     "zod": "^4.6.7"
@@ -56,7 +46,16 @@
     "playwright": "^1.58.0",
     "postcss": "^8.5.30",
     "tailwindcss": "^4.3.3",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "motion": "^14.2.0",
+    "radix-ui": "^1.8.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-resizable-panels": "^4.14.5",
+    "tailwind-merge": "^3.7.0",
+    "@anthropic-ai/claude-agent-sdk": "^0.3.296"
   },
   "build": {
     "appId": "studio.transcribe.desktop",
@@ -64,7 +63,12 @@
     "files": [
       "dist/**/*",
       "skills/**/*",
-      "package.json"
+      "package.json",
+      "!node_modules/docx/dist/*.mjs",
+      "!node_modules/docx/dist/*.umd.cjs",
+      "!node_modules/docx/dist/*.iife.js",
+      "!node_modules/**/*.map",
+      "!node_modules/@anthropic-ai/**/*"
     ],
     "directories": {
       "output": "release"
@@ -96,19 +100,12 @@
     },
     "asarUnpack": [
       "dist/native/**",
-      "node_modules/ffmpeg-static/**",
-      "node_modules/@anthropic-ai/**/*"
+      "node_modules/ffmpeg-static/**"
     ],
     "mac": {
       "target": [
         {
           "target": "dmg",
-          "arch": [
-            "arm64"
-          ]
-        },
-        {
-          "target": "zip",
           "arch": [
             "arm64"
           ]
@@ -126,10 +123,14 @@
       },
       "artifactName": "Transcribe Studio ${version}-${arch}.${ext}",
       "binaries": [
-        "Contents/Resources/app.asar.unpacked/node_modules/ffmpeg-static/ffmpeg",
-        "Contents/Resources/app.asar.unpacked/node_modules/@anthropic-ai/claude-agent-sdk-darwin-${arch}/claude"
+        "Contents/Resources/app.asar.unpacked/node_modules/ffmpeg-static/ffmpeg"
       ]
     },
-    "afterPack": "scripts/build/mac.cjs"
+    "afterPack": "scripts/build/mac.cjs",
+    "compression": "maximum",
+    "electronLanguages": [
+      "en-US",
+      "zh-TW"
+    ]
   }
 }

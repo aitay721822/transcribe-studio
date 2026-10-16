@@ -20,9 +20,10 @@ test('macOS packaging requires Apple Silicon, a Mac host and release signing', (
   assert.throws(() => packageArguments('mac', 'x64', 'darwin'), /Apple Silicon/);
   assert.throws(() => packageArguments('mac', 'arm64', 'win32'), /built on a Mac/);
   assert.throws(() => packageArguments('mac', 'ia32', 'darwin'), /arm64 and x64/);
-  assert.deepEqual(packageArguments('portable', 'x64', 'win32'), [
+  assert.throws(() => packageArguments('portable', 'x64', 'win32'), /Unsupported package target/);
+  assert.deepEqual(packageArguments('nsis', 'x64', 'win32'), [
     '--win',
-    'portable',
+    'nsis',
     '--x64',
     '--publish',
     'never',
@@ -30,6 +31,11 @@ test('macOS packaging requires Apple Silicon, a Mac host and release signing', (
   const { build, scripts } = require('../../package.json');
 
   assert.equal(scripts['package:mac:x64'], undefined);
+  assert.equal(scripts['package:portable'], undefined);
+  assert.deepEqual(
+    build.mac.target.map((target) => target.target),
+    ['dmg']
+  );
   for (const target of build.mac.target) assert.deepEqual(target.arch, ['arm64']);
 
   assert.ok(build.mac.extendInfo.NSMicrophoneUsageDescription);
@@ -160,10 +166,7 @@ test('Mac bundle verification passes file paths before lipo architecture flags a
     root,
     'Transcribe Studio.app/Contents/Resources/app.asar.unpacked/node_modules'
   );
-  const binaries = [
-    path.join(dependencies, 'ffmpeg-static/ffmpeg'),
-    path.join(dependencies, '@anthropic-ai/claude-agent-sdk-darwin-arm64/claude'),
-  ];
+  const binaries = [path.join(dependencies, 'ffmpeg-static/ffmpeg')];
   for (const binary of binaries) {
     await fs.promises.mkdir(path.dirname(binary), { recursive: true });
     await fs.promises.writeFile(binary, 'fixture');
