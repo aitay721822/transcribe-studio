@@ -12,7 +12,12 @@ function packageArguments(target, arch, platform = process.platform, release = f
   if (selected === 'mac') {
     args.splice(0, 2, '--mac');
     if (release) args.push('--config.forceCodeSigning=true', '--config.mac.notarize=true');
-    else args.push('--config.mac.notarize=false');
+    else
+      args.push(
+        '--config.mac.identity=null',
+        '--config.mac.notarize=false',
+        '--config.dmg.sign=false'
+      );
   }
   return args;
 }

@@ -105,6 +105,48 @@ test('Windows packaging retains its signing configuration and compression overri
   assert.deepEqual(packageEnvironment('win32', false, source), source);
 });
 
+test('unsigned Mac CLI config bypasses certificate loading in the actual app and DMG signing paths', async (t) => {
+  const {
+    createYargs,
+    configureBuildCommand,
+    normalizeOptions,
+  } = require('electron-builder/out/builder');
+  const { MacPackager } = require('app-builder-lib/out/macPackager');
+  const { MacTargetHelper } = require('app-builder-lib/out/mac/MacTargetHelper');
+  const macCodeSign = require('app-builder-lib/out/codeSign/macCodeSign');
+  const { DmgTarget } = require('dmg-builder');
+  const { validateConfiguration } = require('app-builder-lib/out/util/config/config');
+
+  const options = normalizeOptions(
+    configureBuildCommand(createYargs())
+      .exitProcess(false)
+      .parse(packageArguments('mac', 'arm64', 'darwin'))
+  );
+  await validateConfiguration(options.config, { isEnabled: false });
+  assert.equal(options.config.mac.identity, null);
+  assert.equal(options.config.mac.notarize, false);
+  assert.equal(options.config.dmg.sign, false);
+  // Exercise macOS signing branches on every host, without invoking native commands.
+  t.mock.method(macCodeSign, 'isSignAllowed', () => true);
+  const packager = {
+    platformSpecificBuildOptions: options.config.mac,
+    forceCodeSigning: false,
+
+    get codeSigningInfo() {
+      assert.fail('Unsigned verification must not read or import a signing certificate');
+    },
+  };
+  packager.helper = new MacTargetHelper(packager);
+  assert.equal(await MacPackager.prototype.sign.call(packager, '/demo.app', '/output'), false);
+  await DmgTarget.prototype.signDmg.call({ packager }, '/demo.dmg');
+  const signed = normalizeOptions(
+    configureBuildCommand(createYargs())
+      .exitProcess(false)
+      .parse(packageArguments('mac', 'arm64', 'darwin', true))
+  );
+  assert.notEqual(signed.config.mac.identity, null);
+});
+
 test('Mac bundle verification passes file paths before lipo architecture flags and preserves diagnostics', async (t) => {
   const verifyMacBundle = require('../../scripts/build/mac.cjs');
 
