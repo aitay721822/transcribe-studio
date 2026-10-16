@@ -18,6 +18,12 @@ export async function removeMeeting(
   const imageDirectory = await ownedImageDirectory(dataDir, id);
   const audioDir = path.resolve(dataDir, 'audio');
   const journalDir = path.resolve(store.conversations.directory);
+  const actualDataDir = await fs.realpath(dataDir);
+  const actualAudioDir = path.resolve(actualDataDir, 'audio');
+  const actualJournalDir = path.resolve(
+    actualDataDir,
+    path.relative(path.resolve(dataDir), journalDir)
+  );
   const shared = new Set<string>(
     store
       .meetings()
@@ -31,7 +37,7 @@ export async function removeMeeting(
   if (!inside(journalDir, journal)) throw new Error('對話資料路徑未授權');
   const planned = [...new Set([journal, ...audio.filter((file) => !shared.has(file))])];
   for (const file of planned) {
-    const directory = file === journal ? journalDir : audioDir;
+    const directory = file === journal ? actualJournalDir : actualAudioDir;
     try {
       if (!inside(directory, await fs.realpath(file)))
         throw new Error('資料路徑指向應用程式目錄外');

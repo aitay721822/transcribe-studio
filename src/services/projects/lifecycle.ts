@@ -16,6 +16,13 @@ export async function removeProject(store: Store, dataDir: string, id: string) {
   const audioDir = path.resolve(dataDir, 'audio');
   const journalDir = path.resolve(store.conversations.directory);
   const runtimeRoot = path.resolve(dataDir, 'runtime');
+  const actualDataDir = await fs.realpath(dataDir);
+  const actualAudioDir = path.resolve(actualDataDir, 'audio');
+  const actualJournalDir = path.resolve(
+    actualDataDir,
+    path.relative(path.resolve(dataDir), journalDir)
+  );
+  const actualRuntimeRoot = path.resolve(actualDataDir, 'runtime');
   const runtimeDirectories = [
     path.resolve(runtimeRoot, 'projects', id),
     path.resolve(runtimeRoot, 'workspaces', id),
@@ -24,7 +31,7 @@ export async function removeProject(store: Store, dataDir: string, id: string) {
     if (!inside(runtimeRoot, directory) || directory === runtimeRoot)
       throw new Error('Runtime 路徑未授權');
     try {
-      if (!inside(runtimeRoot, await fs.realpath(directory)))
+      if (!inside(actualRuntimeRoot, await fs.realpath(directory)))
         throw new Error('Runtime 路徑指向應用程式目錄外');
     } catch (caughtError) {
       const error = caughtError instanceof Error ? caughtError : new Error(String(caughtError));
@@ -45,7 +52,7 @@ export async function removeProject(store: Store, dataDir: string, id: string) {
     if (!inside(audioDir, file) && !inside(journalDir, file)) throw new Error('資料路徑未授權');
     try {
       const real = await fs.realpath(file);
-      if (!inside(audioDir, real) && !inside(journalDir, real))
+      if (!inside(actualAudioDir, real) && !inside(actualJournalDir, real))
         throw new Error('資料路徑指向應用程式目錄外');
     } catch (caughtError) {
       const error = caughtError instanceof Error ? caughtError : new Error(String(caughtError));

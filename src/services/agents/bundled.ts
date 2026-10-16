@@ -1,7 +1,11 @@
 import fs from 'node:fs/promises';
 
 export function bundledClaudeModule(platform: string, arch: string) {
-  if (!['win32', 'darwin', 'linux'].includes(platform) || !['x64', 'arm64'].includes(arch))
+  if (
+    !['win32', 'darwin', 'linux'].includes(platform) ||
+    !['x64', 'arm64'].includes(arch) ||
+    (platform === 'darwin' && arch !== 'arm64')
+  )
     throw new Error('此平台沒有隨附 Claude runtime，請指定本機 CLI 路徑');
   return `@anthropic-ai/claude-agent-sdk-${platform}-${arch}/claude${platform === 'win32' ? '.exe' : ''}`;
 }

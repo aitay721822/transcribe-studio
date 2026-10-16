@@ -19,7 +19,6 @@
     "lint": "biome lint --error-on-warnings --config-path=config/biome.json . && node scripts/checks/style.cjs",
     "package:mac": "npm run build && node scripts/build/package.cjs mac",
     "package:mac:arm64": "npm run build && node scripts/build/package.cjs mac arm64",
-    "package:mac:x64": "npm run build && node scripts/build/package.cjs mac x64",
     "test:ui:platform": "node scripts/ui/platform/desktop.cjs && node scripts/ui/security/credentials.cjs",
     "test:packaged": "node scripts/ui/platform/packaged.cjs"
   },
@@ -102,8 +101,18 @@
     ],
     "mac": {
       "target": [
-        "dmg",
-        "zip"
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64"
+          ]
+        }
       ],
       "category": "public.app-category.productivity",
       "icon": "config/branding/native/icon.icns",

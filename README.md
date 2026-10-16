@@ -197,14 +197,16 @@ Windows／macOS 使用系統 safeStorage；Linux 必須有受支援的 libsecret
 
 ## 驗證與限制
 
+專案透過 `.gitattributes` 統一文字檔的 LF 換行，與 Biome 格式設定一致，不受 Windows 的 `core.autocrlf` 影響。既有工作目錄若已含 CRLF，更新後先執行 `npm run format`，再執行 `npm run check`；不需修改全域 Git 設定。
+
 ### macOS 建置與驗收
 
 Electron 44 需要 macOS 13 以上。原生系統音訊目前以 macOS 14.2 以上為能力門檻；較舊版本仍可用麥克風或虛擬音訊輸入，不顯示可用的原生系統音訊選項。
 應用會檢查系統權限、區分首次授權與已拒絕／受管理限制，並提供系統設定入口。Mac 首次顯示裝置清單時不主動要求麥克風權限；開始錄音或手動偵測才提出請求。
 系統音訊使用 Electron 原生擷取與可用的系統選擇器。持續無聲僅顯示診斷提示，不把正常靜音誤判為失敗或中止錄音。
 
-在對應架構的 Mac 安裝 Node.js 24，執行 `npm ci --include=optional`、`npx --no-install install-electron`、`npm test`，再執行 `npm run package:mac:arm64` 或 `npm run package:mac:x64`。
-每個架構必須使用獨立、重新安裝的依賴目錄；FFmpeg 與 Claude runtime 的架構會在封裝後以 lipo 檢查，原生執行檔保留執行權限並置於 asar.unpacked。輸出為 DMG 與 ZIP，圖示由同一份 SVG 產生 ICNS。
+macOS 僅支援 Apple Silicon（arm64）。在 Apple Silicon Mac 安裝 Node.js 24，執行 `npm ci --include=optional`、`npx --no-install install-electron`、`npm test`，再執行 `npm run package:mac` 或 `npm run package:mac:arm64`。
+FFmpeg 與 Claude runtime 的 arm64 架構會在封裝後以 lipo 檢查，原生執行檔保留執行權限並置於 asar.unpacked。輸出為 DMG 與 ZIP，圖示由同一份 SVG 產生 ICNS。
 Finder 啟動時會補入已知 Homebrew、nvm、Volta 等安裝位置；Node CLI 的 symlink／shebang 入口透過應用 Node runtime 啟動，不執行 shell 設定檔。
 Mac 快捷鍵顯示 Command；標記文字與建立會議使用 Command Shift M，專案音檔辨識使用 Command Shift I。Windows 保留 Ctrl Alt 組合。
 Mac 標題列使用原生視窗按鈕，提供原生編輯選單；Command Q 經由既有關閉與儲存流程。
@@ -213,7 +215,7 @@ Mac 標題列使用原生視窗按鈕，提供原生編輯選單；Command Q 經
 無法解密時可解鎖後重試，或經確認先備份原密文至 `locked-settings-*.enc` 再重新輸入服務設定；會議資料保留。備份或加密失敗不重設原設定。
 Windows 的憑證密文不能直接在 Mac 解密。Mac 正式版本應使用一致的 Developer ID 簽章，確保升級後的 Keychain 存取身分穩定。
 
-`.github/workflows/platforms.yml` 提供 Windows、macOS arm64 與 Intel 的單元／平台 UI／Mac 封裝與封裝後 Claude 測試。
+`.github/workflows/platforms.yml` 提供 Windows 與 macOS arm64 的單元／平台 UI／Mac 封裝與封裝後 Claude 測試。
 CI 使用虛擬資料驗證邏輯；實機驗收另需檢查麥克風、系統音訊、混音、拒絕／撤銷權限、多螢幕與裝置拔除，並確認錄音中暫停、取消及退出不殘留 CLI。
 一般 Mac 建置不公證；正式建置設定 `STUDIO_MAC_RELEASE=1`，會強制要求簽章與公證。CI 手動執行的 `signed_release` 使用 repository secrets：`MAC_CSC_LINK`、`MAC_CSC_KEY_PASSWORD`、`APPLE_ID`、`APPLE_APP_SPECIFIC_PASSWORD`、`APPLE_TEAM_ID`；不可將憑證值寫進專案。
 `npm run test:ui:platform` 驗證平台介面與真實系統加密；封裝後以 `npm run test:packaged` 驗證 .app、加密設定與隨附 Claude 工具回合。

@@ -12,13 +12,17 @@ async function fixture(t, seconds) {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'studio-audio-dsp-test-'));
   const priorTemp = process.env.TEMP;
   const priorTmp = process.env.TMP;
+  const priorTmpDir = process.env.TMPDIR;
   process.env.TEMP = dir;
   process.env.TMP = dir;
+  process.env.TMPDIR = dir;
   t.after(() => {
     if (priorTemp === undefined) delete process.env.TEMP;
     else process.env.TEMP = priorTemp;
     if (priorTmp === undefined) delete process.env.TMP;
     else process.env.TMP = priorTmp;
+    if (priorTmpDir === undefined) delete process.env.TMPDIR;
+    else process.env.TMPDIR = priorTmpDir;
   });
   const file = path.join(dir, 'noisy.wav');
   const pcm = Buffer.alloc(seconds * 32000);
@@ -34,12 +38,12 @@ async function fixture(t, seconds) {
   return { dir, file, pcm };
 }
 
-const workspaces = async () =>
-  new Set((await fs.readdir(os.tmpdir())).filter((name) => name.startsWith('studio-audio-work-')));
+const workspaces = async (directory) =>
+  new Set((await fs.readdir(directory)).filter((name) => name.startsWith('studio-audio-work-')));
 
 test('staged background denoising reduces steady noise, preserves a voice-band tone and cleans temporary audio', async (t) => {
-  const { file, pcm } = await fixture(t, 10);
-  const before = await workspaces();
+  const { dir, file, pcm } = await fixture(t, 10);
+  const before = await workspaces(dir);
   const events = [];
   let processed;
   t.mock.method(globalThis, 'fetch', async (_url, options) => {
@@ -87,7 +91,7 @@ test('staged background denoising reduces steady noise, preserves a voice-band t
 
   assert(tone(processed) / tone(pcm) > 0.7, 'voice-band energy is preserved');
   assert.deepEqual(await fs.readFile(file), pcmWav(pcm, 16000), 'the original file is unchanged');
-  const after = await workspaces();
+  const after = await workspaces(dir);
   assert.deepEqual(
     [...after].filter((name) => !before.has(name)),
     []
@@ -95,8 +99,8 @@ test('staged background denoising reduces steady noise, preserves a voice-band t
 });
 
 test('cancelling during DSP stops before upload, cleans the worker workspace and emits no completion', async (t) => {
-  const { file } = await fixture(t, 120);
-  const before = await workspaces();
+  const { dir, file } = await fixture(t, 120);
+  const before = await workspaces(dir);
   const controller = new AbortController();
   const events = [];
   let uploads = 0;
@@ -117,7 +121,7 @@ test('cancelling during DSP stops before upload, cleans the worker workspace and
   );
   assert.equal(uploads, 0);
   assert(!events.some((event) => event.stage === 'completed'));
-  const after = await workspaces();
+  const after = await workspaces(dir);
   assert.deepEqual(
     [...after].filter((name) => !before.has(name)),
     []

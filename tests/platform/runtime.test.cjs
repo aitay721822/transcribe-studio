@@ -14,14 +14,15 @@ const { stopChild } = require('../../dist/transport/runtime/process.cjs');
 test('bundled Claude resolves native Darwin and Windows architectures', () => {
   for (const arch of ['arm64', 'x64']) {
     assert.equal(
-      bundledClaudeModule('darwin', arch),
-      `@anthropic-ai/claude-agent-sdk-darwin-${arch}/claude`
-    );
-    assert.equal(
       bundledClaudeModule('win32', arch),
       `@anthropic-ai/claude-agent-sdk-win32-${arch}/claude.exe`
     );
   }
+  assert.equal(
+    bundledClaudeModule('darwin', 'arm64'),
+    '@anthropic-ai/claude-agent-sdk-darwin-arm64/claude'
+  );
+  assert.throws(() => bundledClaudeModule('darwin', 'x64'), /沒有隨附/);
   assert.throws(() => bundledClaudeModule('darwin', 'ia32'), /沒有隨附/);
 });
 

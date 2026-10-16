@@ -7,14 +7,14 @@ const {
   shortcutLabel,
 } = require('../../dist/ui/application/platform/shortcuts.cjs');
 
-test('macOS packaging supports separate architectures, requires a Mac host and enforces release signing', () => {
-  for (const arch of ['arm64', 'x64']) {
-    const args = packageArguments('mac', arch, 'darwin', true);
-    assert.ok(args.includes(`--${arch}`));
-    assert.ok(args.includes('--config.forceCodeSigning=true'));
-    assert.ok(args.includes('--config.mac.notarize=true'));
-    assert.equal(args.includes('--win'), false);
-  }
+test('macOS packaging requires Apple Silicon, a Mac host and release signing', () => {
+  const args = packageArguments('mac', 'arm64', 'darwin', true);
+  assert.ok(args.includes('--arm64'));
+  assert.ok(args.includes('--config.forceCodeSigning=true'));
+  assert.ok(args.includes('--config.mac.notarize=true'));
+  assert.equal(args.includes('--win'), false);
+  assert.ok(packageArguments('mac', undefined, 'darwin').includes('--arm64'));
+  assert.throws(() => packageArguments('mac', 'x64', 'darwin'), /Apple Silicon/);
   assert.throws(() => packageArguments('mac', 'arm64', 'win32'), /built on a Mac/);
   assert.throws(() => packageArguments('mac', 'ia32', 'darwin'), /arm64 and x64/);
   assert.deepEqual(packageArguments('portable', 'x64', 'win32'), [
@@ -24,7 +24,10 @@ test('macOS packaging supports separate architectures, requires a Mac host and e
     '--publish',
     'never',
   ]);
-  const { build } = require('../../package.json');
+  const { build, scripts } = require('../../package.json');
+
+  assert.equal(scripts['package:mac:x64'], undefined);
+  for (const target of build.mac.target) assert.deepEqual(target.arch, ['arm64']);
 
   assert.ok(build.mac.extendInfo.NSMicrophoneUsageDescription);
   assert.ok(build.mac.extendInfo.NSAudioCaptureUsageDescription);
@@ -34,6 +37,17 @@ test('macOS packaging supports separate architectures, requires a Mac host and e
     fs.readFileSync(build.mac.entitlements, 'utf8'),
     /com.apple.security.device.audio-input/
   );
+});
+
+test('Mac bundle verification rejects Intel and universal bundles before checking binaries', async () => {
+  const verifyMacBundle = require('../../scripts/build/mac.cjs');
+
+  for (const arch of [1, 4])
+    await assert.rejects(
+      verifyMacBundle({ electronPlatformName: 'darwin', arch }),
+      /Apple Silicon/
+    );
+  await verifyMacBundle({ electronPlatformName: 'win32', arch: 1 });
 });
 
 test('native Mac icon contains valid 256, 512 and 1024 pixel PNG chunks', () => {
