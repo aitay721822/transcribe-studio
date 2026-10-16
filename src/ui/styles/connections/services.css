@@ -1,0 +1,26 @@
+.service-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 5px;
+  margin: 20px 0 24px;
+  background: var(--accent-soft);
+  border-radius: 18px;
+}
+.service-tabs [role="tab"] {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  font-size: 16px;
+  white-space: normal;
+  border: 1px solid transparent;
+  border-radius: 12px;
+}
+.service-tabs [aria-selected="true"] {
+  background: var(--panel);
+  color: var(--ink);
+  border-color: var(--line);
+}
+.setup-service[hidden],
+.settings-section[role="tabpanel"][hidden] {
+  display: none;
+}

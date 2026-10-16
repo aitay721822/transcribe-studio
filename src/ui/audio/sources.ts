@@ -1,0 +1,51 @@
+import type { InputDevice } from '../../domain/audio-devices';
+import { inputDeviceCatalog } from '../../domain/audio-devices';
+
+export type { InputDevice } from '../../domain/audio-devices';
+
+export async function listInputDevices(requestPermission = false): Promise<InputDevice[]> {
+  let stream: MediaStream | undefined;
+  try {
+    if (requestPermission)
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    const track = stream?.getAudioTracks()[0];
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    return inputDeviceCatalog(
+      devices,
+      track ? { deviceId: track.getSettings().deviceId, label: track.label } : undefined
+    );
+  } finally {
+    stream?.getTracks().forEach((track) => track.stop());
+  }
+}
+
+export async function openAudioSources(source: string, microphoneId = ''): Promise<MediaStream[]> {
+  const streams: MediaStream[] = [];
+  try {
+    if (source !== 'mic') {
+      const system = await navigator.mediaDevices.getDisplayMedia({
+        audio: true,
+        video: { width: 320, height: 180, frameRate: 1 },
+      });
+      streams.push(system);
+      if (!system.getAudioTracks().length) throw new Error('沒有取得系統音訊，請確認音訊擷取權限');
+    }
+    if (source !== 'system')
+      streams.push(
+        await navigator.mediaDevices.getUserMedia({
+          audio: {
+            ...(microphoneId ? { deviceId: { exact: microphoneId } } : {}),
+            echoCancellation: true,
+            noiseSuppression: true,
+          },
+          video: false,
+        })
+      );
+    return streams;
+  } catch (caughtError) {
+    const error = caughtError instanceof Error ? caughtError : new Error(String(caughtError));
+
+    streams.forEach((s) => s.getTracks().forEach((t) => t.stop()));
+    throw error;
+  }
+}

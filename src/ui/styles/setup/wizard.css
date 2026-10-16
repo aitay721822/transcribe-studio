@@ -1,0 +1,139 @@
+.setup-screen {
+  height: 100dvh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg);
+}
+.setup-titlebar {
+  height: 48px;
+  flex: none;
+  background: var(--navigation-tint);
+}
+.setup-titlebar .chrome-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.setup-screen-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.setup-page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100%;
+  padding: 28px clamp(20px, 5vw, 64px) 0;
+}
+.setup-wizard {
+  width: min(780px, 100%);
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.setup-wizard h1 {
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  margin: 8px 0 28px;
+}
+.setup-steps {
+  display: flex;
+  gap: 20px;
+  padding: 0 0 24px;
+  margin: 0 0 26px;
+  list-style: none;
+  border-bottom: 1px solid var(--line);
+}
+.setup-steps li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+.setup-steps span {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+}
+.setup-steps .current {
+  color: var(--ink);
+}
+.setup-body h2 {
+  font-size: 18px;
+  margin: 0 0 8px;
+}
+.setup-body .field {
+  margin-top: 18px;
+}
+.setup-actions,
+.setup-detection-head,
+.detected-agent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.setup-actions {
+  margin-top: 24px;
+  border-top: 1px solid var(--line);
+  padding-top: 22px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  position: sticky;
+  bottom: 0;
+  padding-bottom: 20px;
+  background: var(--bg);
+}
+.setup-detection-head {
+  color: var(--muted);
+  margin-top: 22px;
+}
+.detected-agent {
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+}
+.detected-agent > div {
+  min-width: 0;
+}
+.detected-agent small {
+  display: block;
+  color: var(--muted);
+}
+.detected-path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 380px;
+}
+.setup-summary {
+  display: grid;
+  gap: 14px;
+  margin: 26px 0;
+}
+.setup-summary > div {
+  display: grid;
+  gap: 4px;
+  padding: 18px;
+  background: var(--accent-soft);
+  border-radius: 12px;
+}
+.setup-summary span,
+.setup-summary small {
+  color: var(--muted);
+}
+.setup-steps .current span,
+.setup-steps .done span {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent);
+}

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 128 128" role="img" aria-labelledby="title desc" color="#37675a">
+  <title id="title">Transcribe Studio mark</title>
+  <desc id="desc">Voice turning into written notes; transparent single-color vector.</desc>
+  <g fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M30 57v18M46 40v48M62 49v33a6 6 0 0 0 6 6h28"/>
+    <path d="M78 44h20M78 64h14"/>
+  </g>
+</svg>

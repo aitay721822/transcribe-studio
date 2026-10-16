@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: studio-media:; media-src 'self' blob: studio-media:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'none'">
+  <title>Transcribe Studio</title>
+  <link rel="stylesheet" href="./styles/tailwind.css">
+  <link rel="stylesheet" href="./styles/base.css">
+  <link rel="stylesheet" href="./styles/native.css">
+  <link rel="stylesheet" href="./styles/layout.css">
+  <link rel="stylesheet" href="./styles/responsive.css">
+  <link rel="stylesheet" href="./styles/dropdown.css">
+  <link rel="stylesheet" href="./styles/dialogs/project-editor.css">
+  <link rel="stylesheet" href="./styles/dialogs/project-menu.css">
+  <link rel="stylesheet" href="./styles/dialogs/search-palette.css">
+  <link rel="stylesheet" href="./styles/projects/overview.css">
+  <link rel="stylesheet" href="./styles/layout/workspace.css">
+  <link rel="stylesheet" href="./styles/setup/wizard.css">
+  <link rel="stylesheet" href="./styles/agent/composer.css">
+  <link rel="stylesheet" href="./styles/agent/mentions.css">
+  <link rel="stylesheet" href="./styles/agent/session.css">
+  <link rel="stylesheet" href="./styles/motion/interactions.css">
+</head>
+<body>
+  <div id="app"></div>
+  <div id="toasts" aria-live="polite"></div>
+  <dialog id="modal"></dialog>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

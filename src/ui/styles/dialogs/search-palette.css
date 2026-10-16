@@ -1,0 +1,110 @@
+dialog.search-palette {
+  width: min(520px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 64px);
+  padding: 8px 4px 12px;
+  border-radius: 20px;
+  border: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+  background: color-mix(in srgb, var(--panel) 94%, var(--ink));
+  box-shadow: 0 22px 65px #0005;
+  overflow: hidden;
+}
+dialog.search-palette::backdrop {
+  background: #0002;
+  backdrop-filter: none;
+}
+.search-palette #palette-query {
+  width: 100%;
+  height: 44px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+  font-size: 16px;
+  padding: 7px 10px;
+}
+.search-palette #palette-query::-webkit-search-cancel-button {
+  cursor: pointer;
+}
+#palette-results {
+  overflow-y: auto;
+  max-height: calc(100dvh - 148px);
+  overscroll-behavior: contain;
+}
+.palette-section {
+  padding: 13px 9px 7px;
+  font-size: 16px;
+  color: var(--muted);
+}
+.palette-section.palette-quick-heading {
+  padding-top: 15px;
+}
+.palette-result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 31px;
+  padding: 5px 9px;
+  border-radius: 12px;
+  text-align: left;
+  font-size: 16px;
+}
+.palette-result.is-active {
+  background: color-mix(in srgb, var(--ink) 9%, transparent);
+}
+.palette-result-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.palette-result-project {
+  color: var(--muted);
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+}
+.palette-result-state {
+  width: 13px;
+  flex-shrink: 0;
+  color: var(--muted);
+}
+.palette-result .icon {
+  width: 14px;
+  height: 14px;
+  color: var(--muted);
+}
+.palette-result kbd {
+  flex-shrink: 0;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.4;
+  padding: 0 5px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  color: var(--muted);
+}
+.palette-empty {
+  padding: 11px 9px;
+  font-size: 16px;
+  color: var(--muted);
+}
+.palette-announcement {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@media (max-width: 540px) {
+  .palette-result-project {
+    max-width: 75px;
+  }
+}

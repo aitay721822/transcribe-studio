@@ -1,0 +1,107 @@
+#toasts {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 600px;
+}
+.toast {
+  background: var(--ink);
+  color: var(--bg);
+  padding: 11px 18px;
+  border-radius: 8px;
+  font-size: 16px;
+  box-shadow: var(--shadow);
+  animation: appear 0.2s ease;
+}
+.toast.error {
+  background: var(--error);
+  color: white;
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.toast > span {
+  flex: 1;
+}
+.toast > button {
+  display: flex;
+  padding: 2px;
+}
+dialog {
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 0;
+  width: min(850px, 85vw);
+  max-height: 85vh;
+}
+dialog::backdrop {
+  background: #17281d55;
+  backdrop-filter: blur(5px);
+}
+.modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--line);
+}
+.modal-head h2 {
+  font-size: 16px;
+  margin: 0;
+}
+.modal-body {
+  padding: 24px;
+  overflow: auto;
+  max-height: 65vh;
+}
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 15px 24px;
+  border-top: 1px solid var(--line);
+}
+.diff-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.diff-grid pre {
+  font: 16px / 1.9 Studio;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 48vh;
+  overflow: auto;
+  margin: 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+}
+.diff-grid h3 {
+  font-size: 16px;
+  margin: 0 0 9px;
+  color: var(--muted);
+}
+.revision-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.revision-item small {
+  display: block;
+  color: var(--muted);
+  font-size: 16px;
+}

@@ -1,0 +1,34 @@
+.device-details {
+  margin-top: 12px;
+  padding: 14px 16px;
+  background: var(--accent-soft);
+  border-radius: 10px;
+  min-width: 0;
+}
+.device-picker {
+  flex-wrap: wrap;
+}
+.field .device-picker > .dropdown-control {
+  flex: 1 1 260px;
+}
+.device-details strong {
+  display: block;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+.device-details p {
+  margin: 8px 0 0;
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+.device-options .dropdown-option > span:first-child {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+.device-options .dropdown-option {
+  height: auto;
+  min-height: 44px;
+  align-items: start;
+}

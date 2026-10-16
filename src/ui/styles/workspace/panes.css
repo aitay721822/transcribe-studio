@@ -1,0 +1,68 @@
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(220px, var(--left-width, 26%)) minmax(320px, 1fr) minmax(
+      270px,
+      var(--right-width, 27%)
+    );
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.workspace-pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+}
+.workspace-pane:last-child {
+  border-right: 0;
+  background: var(--glass);
+}
+.pane-header {
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid var(--line);
+  flex: none;
+}
+.pane-header h2 {
+  font-size: 16px;
+  margin: 0;
+  font-weight: 600;
+}
+.tabs {
+  display: flex;
+  gap: 15px;
+  border-bottom: 1px solid var(--line);
+  padding: 0 20px;
+  height: auto;
+  min-height: 48px;
+  flex-wrap: wrap;
+  flex: none;
+}
+.tab {
+  color: var(--muted);
+  font-size: 16px;
+  border-bottom: 2px solid transparent;
+  padding: 10px 0;
+}
+.tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.notes-save {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.pane-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 20px;
+}

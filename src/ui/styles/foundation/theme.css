@@ -1,0 +1,54 @@
+@font-face {
+  font-family: Studio;
+  src: local("Microsoft JhengHei UI"), local("Microsoft JhengHei"), local("PingFang TC");
+  font-display: swap;
+}
+:root {
+  color-scheme: light;
+  --bg: #f4f5f1;
+  --panel: #fcfcf9;
+  --glass: rgba(245, 246, 242, 0.82);
+  --ink: #263632;
+  --muted: #7c8782;
+  --line: #e0e4dc;
+  --accent: #37675a;
+  --accent-soft: #e5eee8;
+  --sidebar: rgba(232, 236, 229, 0.72);
+  --shadow: 0 20px 70px #23362d18;
+  --red: #b4534b;
+  --error: var(--red);
+  --yellow: #997538;
+  --editor: #fffefa;
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #171d1b;
+  --panel: #202724;
+  --glass: rgba(30, 38, 34, 0.8);
+  --ink: #e2e9e2;
+  --muted: #91a096;
+  --line: #354038;
+  --accent: #9bc1ad;
+  --accent-soft: #2d4236;
+  --sidebar: rgba(36, 46, 39, 0.72);
+  --shadow: 0 20px 70px #0005;
+  --red: #ed9790;
+  --yellow: #d1b778;
+  --editor: #1c231f;
+}
+[data-theme="forest"] {
+  color-scheme: dark;
+  --bg: #16251f;
+  --panel: #20362a;
+  --glass: rgba(26, 45, 34, 0.82);
+  --ink: #f0ecd9;
+  --muted: #a4b59e;
+  --line: #375040;
+  --accent: #d8cb99;
+  --accent-soft: #354832;
+  --sidebar: rgba(30, 52, 38, 0.8);
+  --shadow: 0 20px 70px #0005;
+  --red: #efa89c;
+  --yellow: #dfbe84;
+  --editor: #1c3025;
+}

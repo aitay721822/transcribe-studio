@@ -1,0 +1,209 @@
+.agent-intro {
+  padding: 23px 20px;
+}
+.agent-intro .icon {
+  color: var(--accent);
+  height: 25px;
+  width: 25px;
+}
+.agent-intro h3 {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 13px 0 7px;
+}
+.agent-intro p {
+  color: var(--muted);
+  font-size: 16px;
+  margin: 0 0 18px;
+  line-height: 1.9;
+}
+.prompt-chip {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  text-align: left;
+  padding: 8px 10px;
+  font-size: 16px;
+  display: block;
+  margin: 7px 0;
+  width: 100%;
+}
+.prompt-chip:hover {
+  border-color: var(--accent);
+}
+.agent-feed {
+  flex: 1;
+  overflow: auto;
+  padding: 0 18px 16px;
+  min-height: 0;
+}
+.chat-user {
+  border: 1px solid var(--line);
+  border-radius: 9px 9px 2px 9px;
+  background: var(--panel);
+  padding: 13px;
+  font-size: 16px;
+  margin: 15px 0;
+  white-space: pre-wrap;
+}
+.agent-log {
+  font-size: 16px;
+  display: flex;
+  gap: 7px;
+  color: var(--muted);
+  margin: 12px 0;
+  align-items: flex-start;
+  overflow-wrap: anywhere;
+}
+.agent-log .icon {
+  width: 13px;
+  height: 13px;
+  margin-top: 2px;
+}
+.agent-log.error {
+  color: var(--error);
+}
+.agent-composer {
+  padding: 16px;
+  border-top: 1px solid var(--line);
+  flex: none;
+}
+.agent-composer textarea {
+  width: 100%;
+  min-height: 78px;
+  font-size: 16px;
+  resize: vertical;
+  max-height: 200px;
+}
+.agent-composer .button-row {
+  justify-content: space-between;
+  margin-top: 9px;
+}
+.agent-composer small {
+  color: var(--muted);
+  font-size: 16px;
+}
+.agent-composer select {
+  font-size: 16px;
+  max-width: 155px;
+  padding: 5px;
+}
+.proposal-card,
+.approval-card {
+  padding: 14px;
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  border-radius: 8px;
+  margin: 14px 0;
+}
+.proposal-card strong,
+.approval-card strong {
+  font-size: 16px;
+}
+.proposal-card p,
+.approval-card p {
+  font-size: 16px;
+  color: var(--muted);
+}
+.approval-card pre {
+  font-size: 16px;
+  max-height: 120px;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+.agent-execution {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 14px 0;
+  background: var(--accent-soft);
+}
+.agent-execution strong {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.agent-execution p {
+  margin: 5px 0 0;
+  color: var(--muted);
+}
+.agent-tool-trace {
+  margin: 10px 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+.agent-tool-trace summary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  cursor: pointer;
+}
+.agent-tool-trace summary > span:first-child {
+  min-width: 0;
+  flex: 1 1 180px;
+}
+.agent-tool-trace summary strong,
+.agent-tool-trace summary small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.agent-tool-trace summary strong {
+  font-weight: 500;
+}
+.agent-tool-trace summary small,
+.agent-tool-state {
+  color: var(--muted);
+}
+.agent-tool-trace[open] summary {
+  border-bottom: 1px solid var(--line);
+}
+.agent-tool-trace summary::before {
+  content: "＋";
+  color: var(--accent);
+}
+.agent-tool-trace[open] summary::before {
+  content: "−";
+}
+.agent-tool-trace[data-status="失敗"] .agent-tool-state {
+  color: var(--error);
+}
+.agent-tool-body {
+  padding: 12px;
+}
+.agent-tool-body dl {
+  margin: 0;
+}
+.agent-tool-body dt {
+  color: var(--muted);
+}
+.agent-tool-body dd {
+  margin: 0 0 8px;
+  overflow-wrap: anywhere;
+}
+.agent-json-detail > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.agent-json-detail pre {
+  max-height: 400px;
+  overflow: auto;
+  padding: 10px;
+  border-radius: 6px;
+  background: var(--bg);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font:
+    16px / 1.6 Consolas,
+    monospace;
+}
+.agent-tool-repeat {
+  margin: 0;
+  padding: 0 12px 10px;
+  color: var(--muted);
+}

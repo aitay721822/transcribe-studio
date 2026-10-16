@@ -1,0 +1,34 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@source "../../";
+
+/* Keep Studio's reset and native glass surfaces; do not import Tailwind Preflight. */
+@custom-variant dark (&:where([data-theme="dark"] *, [data-theme="forest"] *));
+@theme {
+  --text-xs: 1rem;
+  --text-xs--line-height: 1.5;
+  --text-sm: 1rem;
+  --text-sm--line-height: 1.5;
+}
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+  --color-card: var(--panel);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--panel);
+  --color-popover-foreground: var(--ink);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--bg);
+  --color-secondary: var(--accent-soft);
+  --color-secondary-foreground: var(--ink);
+  --color-muted: var(--panel);
+  --color-muted-foreground: var(--muted);
+  --color-accent: var(--accent-soft);
+  --color-accent-foreground: var(--ink);
+  --color-error: var(--error);
+  --color-destructive: var(--error);
+  --color-destructive-foreground: var(--bg);
+  --color-border: var(--line);
+  --color-input: var(--line);
+  --color-ring: var(--accent);
+}

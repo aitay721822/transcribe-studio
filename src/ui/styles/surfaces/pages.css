@@ -1,0 +1,244 @@
+.hero {
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  display: grid;
+  grid-template-columns: 1fr 290px;
+  overflow: hidden;
+  background: var(--panel);
+  margin-bottom: 24px;
+}
+.hero-text {
+  padding: 33px 32px;
+}
+.hero h2 {
+  font-size: 25px;
+  font-weight: 400;
+  margin: 0 0 10px;
+  letter-spacing: 1px;
+}
+.hero p {
+  max-width: 420px;
+  color: var(--muted);
+  font-size: 16px;
+  margin: 0 0 25px;
+  line-height: 1.9;
+}
+.hero-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  position: relative;
+  border-left: 1px solid var(--line);
+  background: var(--accent-soft);
+}
+.hero-visual span {
+  width: 3px;
+  height: calc(12px + var(--h) * 1px);
+  background: var(--accent);
+  opacity: 0.45;
+  border-radius: 5px;
+}
+.hero-visual::before {
+  content: "LISTEN. CAPTURE. REMEMBER.";
+  position: absolute;
+  bottom: 20px;
+  font: 16px Georgia;
+  letter-spacing: 0.3px;
+  text-align: center;
+  padding: 0 12px;
+  max-width: 100%;
+  color: var(--accent);
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 13px;
+  margin-bottom: 34px;
+}
+.stat {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 17px 20px;
+  background: var(--panel);
+}
+.stat-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  color: var(--muted);
+}
+.stat strong {
+  font: 32px Georgia;
+  display: block;
+  margin: 8px 0 2px;
+}
+.stat small {
+  font-size: 16px;
+  color: var(--muted);
+}
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.section-heading h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+.section-heading span {
+  font-size: 16px;
+  color: var(--muted);
+}
+.table-wrap {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  overflow: hidden;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+th {
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 16px;
+  letter-spacing: 0.6px;
+  padding: 13px 18px;
+  background: var(--glass);
+  border-bottom: 1px solid var(--line);
+}
+td {
+  padding: 15px 18px;
+  border-bottom: 1px solid var(--line);
+  font-size: 16px;
+}
+.meeting-row:hover {
+  background: var(--accent-soft);
+  cursor: pointer;
+}
+.meeting-row td:first-child {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.meeting-row td {
+  vertical-align: middle;
+}
+.meeting-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.file-tile {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 37px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 7px;
+}
+.meeting-row strong {
+  font-weight: 500;
+}
+.meeting-row small {
+  display: block;
+  font-size: 16px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  white-space: nowrap;
+}
+.badge.failed,
+.badge.interrupted {
+  color: var(--red);
+  background: color-mix(in srgb, var(--red) 10%, transparent);
+}
+.badge.draft {
+  color: var(--muted);
+  background: var(--bg);
+}
+.badge.transcribing {
+  color: var(--yellow);
+  background: color-mix(in srgb, var(--yellow) 10%, transparent);
+}
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 55px 20px;
+  gap: 12px;
+  text-align: center;
+}
+.empty-symbol {
+  height: 52px;
+  width: 52px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  color: var(--accent);
+}
+.empty-symbol .icon {
+  height: 25px;
+  width: 25px;
+}
+.empty h3 {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 6px 0 0;
+}
+.empty p {
+  font-size: 16px;
+  max-width: 390px;
+  color: var(--muted);
+  margin: 0 0 9px;
+}
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 19px;
+  flex-wrap: wrap;
+}
+.filters input {
+  flex: 1;
+}
+.filters select {
+  width: 130px;
+}
+.split-page {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 22px;
+}
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 21px;
+}
+.panel h2 {
+  margin: 0 0 20px;
+  font-size: 16px;
+  font-weight: 600;
+}
+tr:last-child td {
+  border: 0;
+}

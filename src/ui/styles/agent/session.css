@@ -1,0 +1,239 @@
+.composer-permissions {
+  border: 0;
+  background: transparent;
+  border-radius: 8px;
+  padding: 6px 4px;
+  cursor: pointer;
+}
+.composer-permissions:hover,
+.composer-permissions[data-state="open"] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.permission-menu {
+  z-index: 80;
+  width: min(370px, calc(100vw - 24px));
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  font-size: 16px;
+}
+.permission-option {
+  display: flex;
+  width: 100%;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 10px;
+  text-align: left;
+}
+.permission-option:hover,
+.permission-option[aria-pressed="true"] {
+  background: var(--accent-soft);
+}
+.permission-option > span {
+  flex: 1;
+  min-width: 0;
+}
+.permission-option strong,
+.temporary-toggle strong {
+  display: block;
+  font-weight: 500;
+}
+.permission-arrow {
+  fill: var(--panel);
+}
+.temporary-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 4px 2px;
+  padding: 12px 8px;
+  border-top: 1px solid var(--line);
+}
+.temporary-toggle > span {
+  flex: 1;
+}
+.temporary-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+.temporary-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.agent-input-wrap.is-temporary {
+  border-style: dashed;
+}
+.image-attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 12px 0;
+  max-height: 200px;
+  overflow: auto;
+}
+.image-attachment {
+  width: 88px;
+  height: 88px;
+  position: relative;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+}
+.image-attachment img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+.image-attachment > button {
+  position: absolute;
+  right: 2px;
+  top: 2px;
+  width: 24px;
+  height: 24px;
+  line-height: 1;
+  border-radius: 50%;
+  color: var(--ink);
+  background: var(--panel);
+}
+.chat-images {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.chat-images img {
+  width: 120px;
+  height: 100px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+}
+.chat-assistant {
+  padding: 14px 2px;
+  font-size: 16px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.agent-queue {
+  margin: 0 8px -6px;
+  padding: 8px 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px 16px 0 0;
+  background: color-mix(in srgb, var(--panel) 94%, var(--ink) 6%);
+  max-height: 200px;
+  overflow: auto;
+}
+.agent-queue-heading {
+  padding: 0 12px 5px;
+}
+.agent-queue-item {
+  display: block;
+  font-size: 16px;
+}
+.agent-queue-item > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  list-style: none;
+  cursor: pointer;
+  min-height: 34px;
+}
+.agent-queue-item > summary::-webkit-details-marker {
+  display: none;
+}
+.queue-glyph {
+  color: var(--muted);
+  display: flex;
+  flex-shrink: 0;
+}
+.queue-glyph .icon {
+  width: 16px;
+  height: 16px;
+}
+.queue-message {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+}
+.queue-thumbnail {
+  width: 28px;
+  height: 28px;
+  position: relative;
+  flex-shrink: 0;
+}
+.queue-thumbnail img {
+  width: 100%;
+  height: 100%;
+  border-radius: 5px;
+  border: 1px solid var(--line);
+  object-fit: cover;
+}
+.queue-thumbnail > span {
+  position: absolute;
+  bottom: -3px;
+  right: -5px;
+  color: var(--ink);
+  background: var(--panel);
+  border-radius: 5px;
+  padding: 0 3px;
+  font-size: 16px;
+  line-height: 1.1;
+}
+.queue-steer {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+  padding: 4px;
+  color: var(--muted);
+}
+.queue-steer:hover {
+  color: var(--accent);
+}
+.queue-detail {
+  padding: 4px 12px 12px;
+  border-top: 1px solid var(--line);
+}
+.queue-detail > p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 8px 0;
+}
+.agent-queue [data-cancel-input] {
+  border: 0;
+  background: transparent;
+  padding: 4px;
+  min-height: 28px;
+  color: var(--muted);
+}
+.agent-queue [data-cancel-input] .icon {
+  width: 16px;
+  height: 16px;
+}
+.permission-option > span > span,
+.temporary-toggle > span > span {
+  display: block;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.6;
+  margin-top: 3px;
+}
+@container (max-width: 440px) {
+  .composer-permissions > span {
+    display: inline;
+  }
+  .composer-model {
+    display: none;
+  }
+}

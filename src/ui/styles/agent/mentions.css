@@ -1,0 +1,174 @@
+.mention-menu {
+  position: fixed;
+  z-index: 35;
+  overflow: auto;
+  padding: 9px 7px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--panel) 97%, var(--ink) 3%);
+  box-shadow: 0 16px 40px #0003;
+  font-size: 16px;
+}
+.mention-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px 4px;
+  gap: 10px;
+  color: var(--muted);
+}
+.mention-heading button {
+  padding: 3px 8px;
+  color: var(--muted);
+}
+.mention-options {
+  display: flex;
+  flex-direction: column;
+}
+.mention-options > button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 12px;
+  min-height: 36px;
+}
+.mention-options > button:hover,
+.mention-options > button[aria-selected="true"] {
+  background: var(--accent-soft);
+}
+.mention-row-text > span,
+.mention-action > span {
+  color: var(--muted);
+  font-size: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mention-glyph {
+  display: flex;
+  width: 20px;
+  flex-shrink: 0;
+  color: var(--muted);
+}
+.mention-row-text {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  width: 100%;
+}
+.mention-row-text > strong {
+  flex-shrink: 0;
+  max-width: 48%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.mention-section-label {
+  padding: 8px 10px 5px;
+  color: var(--muted);
+  font-size: 16px;
+}
+.mention-action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  min-height: 36px;
+  border-radius: 12px;
+  text-align: left;
+}
+.mention-action:hover {
+  background: var(--accent-soft);
+}
+.mention-action > .icon {
+  flex-shrink: 0;
+  color: var(--muted);
+}
+.mention-action > strong {
+  flex-shrink: 0;
+  max-width: 50%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+.mention-progress {
+  padding: 6px 4px;
+}
+.mention-menu button:focus-visible,
+.mention-direct summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.mention-progress {
+  margin: 8px 6px;
+}
+.mention-more {
+  padding: 8px;
+  color: var(--accent);
+}
+.mention-direct {
+  border-top: 1px solid var(--line);
+  margin-top: 8px;
+  padding: 10px 6px 0;
+}
+.mention-direct summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+.mention-direct label {
+  display: grid;
+  gap: 5px;
+  margin-top: 10px;
+}
+.mention-direct input,
+.mention-direct select {
+  width: 100%;
+  min-width: 0;
+  background: var(--editor);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px;
+}
+.mention-direct > button {
+  margin-top: 10px;
+  color: var(--accent);
+}
+.reference-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 10px 0;
+  max-height: 140px;
+  overflow: auto;
+}
+.reference-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 4px 6px 4px 9px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  font-size: 16px;
+}
+.reference-chip > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.reference-chip button {
+  flex-shrink: 0;
+  padding: 2px 5px;
+}
+.sent-references {
+  padding: 8px 0 0;
+}

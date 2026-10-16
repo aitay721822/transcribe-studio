@@ -1,0 +1,238 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 17px;
+}
+.field label {
+  font-size: 16px;
+  color: var(--muted);
+}
+.field small,
+.help {
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.8;
+}
+.field textarea {
+  min-height: 80px;
+}
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 175px;
+  border: 1px dashed var(--accent);
+  border-radius: 8px;
+  background: var(--accent-soft);
+  gap: 11px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+.dropzone .icon {
+  width: 25px;
+  height: 25px;
+  color: var(--accent);
+}
+.dropzone strong {
+  font-weight: 500;
+  font-size: 16px;
+}
+.dropzone small {
+  font-size: 16px;
+  color: var(--muted);
+}
+.selected-file {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.selected-file > div {
+  flex: 1;
+}
+.selected-file small {
+  display: block;
+  color: var(--muted);
+}
+.source-option {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--line);
+  padding: 14px;
+  border-radius: 7px;
+  margin-bottom: 9px;
+}
+.source-option.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.source-option strong {
+  font-size: 16px;
+  font-weight: 500;
+}
+.source-option small {
+  display: block;
+  font-size: 16px;
+  color: var(--muted);
+}
+.check-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  margin: 16px 0;
+}
+.check-line input {
+  accent-color: var(--accent);
+}
+.record-card {
+  background: var(--accent-soft);
+  border-radius: 9px;
+  padding: 25px;
+  margin-top: 22px;
+}
+.record-card .timer {
+  font: 38px Georgia;
+  letter-spacing: 2px;
+  margin: 9px 0 16px;
+}
+.level-bars {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 38px;
+  margin-bottom: 15px;
+}
+.level-bars span {
+  height: 8px;
+  width: 4px;
+  border-radius: 3px;
+  background: var(--accent);
+  opacity: 0.25;
+  transition:
+    height 0.09s,
+    opacity 0.09s;
+}
+.notice {
+  background: var(--accent-soft);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 12px 15px;
+  font-size: 16px;
+  color: var(--accent);
+  margin-bottom: 16px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.notice.error {
+  color: var(--error);
+  background: color-mix(in srgb, var(--error) 7%, var(--panel));
+}
+.audio-denoise-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 16px 0;
+  cursor: pointer;
+}
+.audio-denoise-option input {
+  margin-top: 6px;
+  accent-color: var(--accent);
+}
+.audio-denoise-option strong {
+  font-weight: 500;
+}
+.audio-denoise-option small {
+  display: block;
+  color: var(--muted);
+}
+.audio-jobs {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.audio-job {
+  container-type: inline-size;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--panel);
+}
+.audio-job-heading,
+.audio-job-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.audio-job-heading strong {
+  overflow-wrap: anywhere;
+  font-weight: 500;
+}
+.audio-job-steps {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 0;
+  margin: 18px 0;
+  list-style: none;
+}
+.audio-job-steps li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+.audio-job-steps li > span {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+}
+.audio-job-steps li[data-state="current"],
+.audio-job-steps li[data-state="done"] {
+  color: var(--accent);
+}
+.audio-job-steps li[data-state="current"] > span {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+.audio-job-status,
+.audio-job-hint {
+  color: var(--muted);
+}
+.audio-job progress {
+  display: block;
+  width: 100%;
+  height: 7px;
+  margin-top: 12px;
+  accent-color: var(--accent);
+}
+.audio-job-hint {
+  margin: 10px 0 0;
+}
+.audio-job[data-stage="failed"] .audio-job-status {
+  color: var(--error);
+}
+@container (min-width: 760px) {
+  .audio-job-steps {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@container (max-width: 360px) {
+  .audio-job-steps {
+    grid-template-columns: 1fr;
+  }
+}

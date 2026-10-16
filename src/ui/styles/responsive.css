@@ -1,0 +1,232 @@
+.panel-shell {
+  display: flex;
+  flex-direction: column;
+}
+.title-slot {
+  height: 48px;
+  flex: none;
+}
+.title-slot .app-titlebar {
+  height: 100%;
+}
+.panel-layout {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+.sidebar-slot,
+.main-slot,
+.main-slot > .main {
+  height: 100%;
+  min-height: 0;
+}
+.sidebar-slot > .sidebar {
+  height: 100%;
+}
+.main-slot {
+  container-type: inline-size;
+  container-name: content;
+}
+.navigation-panel {
+  overflow: hidden;
+}
+.navigation-separator {
+  width: 4px;
+  cursor: col-resize;
+  position: relative;
+  flex: none;
+  outline: none;
+  -webkit-app-region: no-drag;
+}
+.navigation-separator::after {
+  content: "";
+  position: absolute;
+  width: 2px;
+  top: 12px;
+  bottom: 12px;
+  left: 1px;
+  border-radius: 2px;
+  background: transparent;
+}
+.navigation-separator:hover::after,
+.navigation-separator:focus-visible::after {
+  background: var(--accent);
+}
+.navigation-collapsed .sidebar-slot {
+  display: none;
+}
+.navigation-backdrop {
+  position: fixed;
+  inset: 48px 0 0;
+  background: #0007;
+  z-index: 20;
+  border: 0;
+}
+@media (max-width: 900px) {
+  .compact-shell #project-navigation {
+    position: fixed !important;
+    top: 48px;
+    bottom: 0;
+    left: 0;
+    width: min(320px, 85vw) !important;
+    z-index: 30;
+    background: var(--navigation-tint);
+    backdrop-filter: blur(36px);
+    border-right: 1px solid var(--line);
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .compact-shell.drawer-open #project-navigation {
+    visibility: visible;
+    pointer-events: auto;
+  }
+  .compact-shell .navigation-separator {
+    display: none;
+  }
+  .main-slot > .main {
+    border-radius: 16px 0 0;
+    clip-path: none;
+  }
+  .content {
+    padding: 20px;
+  }
+  .hero,
+  .split-page {
+    grid-template-columns: 1fr;
+  }
+  .hero-visual {
+    display: none;
+  }
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .page-heading,
+  .section-heading {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .topbar {
+    padding: 0 14px;
+  }
+  .topbar .search-button {
+    display: none;
+  }
+  .record-strip {
+    height: auto;
+    min-height: 58px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+  }
+  .record-strip .button-row {
+    flex-wrap: wrap;
+  }
+  .settings-page .settings-layout {
+    grid-template-columns: 160px minmax(0, 1fr);
+  }
+  .settings-scroll {
+    padding: 22px;
+  }
+  .settings-actions {
+    padding: 16px 22px;
+  }
+  .diff-grid {
+    grid-template-columns: 1fr;
+  }
+  .chrome-menu {
+    display: none;
+  }
+  .table-wrap {
+    overflow-x: auto;
+  }
+}
+@media (max-width: 600px) {
+  .settings-page .settings-layout {
+    grid-template-columns: 132px minmax(0, 1fr);
+  }
+  .settings-nav {
+    padding: 16px 8px;
+  }
+  .settings-nav button {
+    padding: 10px 8px;
+    overflow-wrap: anywhere;
+  }
+  .settings-scroll {
+    padding: 18px 16px;
+  }
+  .settings-actions {
+    padding: 14px 16px;
+  }
+  .settings-scroll .form-grid,
+  .settings-scroll .theme-options {
+    grid-template-columns: 1fr;
+  }
+  .setup-steps {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+}
+@container content (max-width: 880px) {
+  .workspace {
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+  }
+  .workspace-pane {
+    flex: none;
+    min-height: 300px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .workspace-pane:has(.notes-editor),
+  .workspace-pane:has(.document-preview) {
+    min-height: 480px;
+  }
+  .notes-editor {
+    min-height: 360px;
+  }
+  .workspace .agent-pane {
+    min-height: 360px;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .compact-shell #project-navigation {
+    background: var(--panel);
+    backdrop-filter: none;
+  }
+}
+.device-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.device-picker select {
+  flex: 1;
+  min-width: 0;
+}
+.source-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+.source-tabs .active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.level-bars .meter-bar {
+  height: 44px;
+  transform: scaleY(0.1);
+  transform-origin: bottom;
+  transition: none;
+}
+.archived-projects {
+  margin: 12px 8px;
+  font-size: 16px;
+  color: var(--muted);
+}
+.archived-projects summary {
+  cursor: pointer;
+  padding: 6px 0;
+}
+.page-heading > .button-row {
+  flex-wrap: wrap;
+}

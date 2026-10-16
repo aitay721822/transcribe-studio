@@ -1,0 +1,99 @@
+{
+  "name": "transcribe-studio",
+  "version": "0.3.41",
+  "description": "Project-based meeting assistant with streaming ASR and agent revisions",
+  "main": "dist/main.cjs",
+  "author": "Transcribe Studio",
+  "license": "MIT",
+  "scripts": {
+    "start": "npm run build && electron .",
+    "test": "npm run build && node --test tests/*.test.cjs tests/harness/*.test.cjs tests/audio/*.test.cjs tests/agents/*.test.cjs tests/context/*.test.cjs tests/workspace/*.test.cjs",
+    "check": "npm run format:check && npm run typecheck && node scripts/checks/structure.cjs",
+    "test:ui": "npm run build && node scripts/ui/smoke.cjs && node scripts/ui/responsive.cjs && node scripts/ui/project-editor.cjs && node scripts/ui/search/palette.cjs && node scripts/ui/projects/overview.cjs && node scripts/ui/projects/workspace.cjs && node scripts/ui/meetings/lifecycle.cjs && node scripts/ui/meetings/annotations.cjs && node scripts/ui/setup/guidance.cjs && node scripts/ui/setup/connections.cjs && node scripts/ui/setup/devices.cjs && node scripts/ui/asr/services.cjs && node scripts/ui/asr/processing.cjs && node scripts/ui/setup/queue.cjs && node scripts/ui/design/primitives.cjs && node scripts/ui/design/react.cjs && node scripts/ui/design/typography.cjs && node scripts/ui/design/settings.cjs && node scripts/ui/motion/interactions.cjs && node scripts/ui/agents/cli.cjs && node scripts/ui/agents/activity.cjs && node scripts/ui/agents/context.cjs && node scripts/ui/projects/files.cjs && node scripts/ui/agents/session.cjs",
+    "package": "npm run build && node scripts/build/package.cjs",
+    "package:portable": "npm run build && node scripts/build/package.cjs portable",
+    "build": "npm run check && node scripts/build/compile.cjs",
+    "typecheck": "tsc --noEmit",
+    "format": "node scripts/checks/style.cjs --write && biome check --write --config-path=config/biome.json . && node scripts/checks/style.cjs",
+    "format:check": "biome check --error-on-warnings --config-path=config/biome.json . && node scripts/checks/style.cjs",
+    "lint": "biome lint --error-on-warnings --config-path=config/biome.json . && node scripts/checks/style.cjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.3.296",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "ajv": "^8.17.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "docx": "^9.10.0",
+    "ffmpeg-static": "5.3.0",
+    "motion": "^14.2.0",
+    "radix-ui": "^1.8.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-resizable-panels": "^4.14.5",
+    "tailwind-merge": "^3.7.0",
+    "ws": "^8.18.0",
+    "yauzl": "^3.4.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@babel/parser": "^8.0.7",
+    "@biomejs/biome": "^2.5.15",
+    "@resvg/resvg-js": "^2.6.2",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/ws": "^8.18.2",
+    "@types/yauzl": "^3.4.0",
+    "electron": "44.7.0",
+    "electron-builder": "^26.0.12",
+    "esbuild": "^0.28.2",
+    "playwright": "^1.58.0",
+    "postcss": "^8.5.30",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2"
+  },
+  "build": {
+    "appId": "studio.transcribe.desktop",
+    "productName": "Transcribe Studio",
+    "files": [
+      "dist/**/*",
+      "skills/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "config/branding/native/icon.ico",
+      "signAndEditExecutable": true,
+      "signExecutable": false
+    },
+    "nsis": {
+      "artifactName": "Transcribe Studio Setup ${version}.${ext}",
+      "installerIcon": "config/branding/native/icon.ico",
+      "uninstallerIcon": "config/branding/native/icon.ico",
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Transcribe Studio",
+      "installerLanguages": [
+        "zh_TW",
+        "en_US"
+      ],
+      "displayLanguageSelector": true,
+      "runAfterFinish": false,
+      "deleteAppDataOnUninstall": false
+    },
+    "asarUnpack": [
+      "dist/native/**",
+      "node_modules/ffmpeg-static/**",
+      "node_modules/@anthropic-ai/**/*"
+    ]
+  }
+}

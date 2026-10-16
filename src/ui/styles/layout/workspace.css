@@ -1,0 +1,56 @@
+.workspace.resizable-workspace {
+  display: flex;
+  flex-direction: row;
+}
+.workspace-panel-content {
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+.workspace-panel-content > .workspace-pane {
+  height: 100%;
+  border-right: 0;
+}
+.resizable-workspace .pane-header h2,
+.resizable-workspace .tab,
+.resizable-workspace .prompt-chip {
+  white-space: nowrap;
+}
+.resizable-workspace .tabs {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+.workspace-separator {
+  width: 5px;
+  position: relative;
+  cursor: col-resize;
+  outline: none;
+  touch-action: none;
+  background: var(--bg);
+}
+.workspace-separator::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 2px;
+  width: 1px;
+  background: var(--line);
+  transition: background 0.12s;
+}
+.workspace-separator:hover::after,
+.workspace-separator:focus-visible::after,
+.workspace-separator[data-separator="active"]::after {
+  width: 3px;
+  left: 1px;
+  background: var(--accent);
+}
+.workspace-stacked .workspace-separator {
+  display: none;
+}
+.workspace.resizable-workspace:has(.workspace-stacked) {
+  overflow: auto;
+}
+.workspace-stacked .workspace-pane {
+  border-bottom: 1px solid var(--line);
+}

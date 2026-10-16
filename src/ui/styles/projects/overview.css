@@ -1,0 +1,104 @@
+.project-overview {
+  margin: 0 0 30px;
+}
+.project-overview-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 16px;
+}
+.project-overview-heading h2 {
+  font-size: 16px;
+  margin: 0;
+}
+.project-meeting-shortcuts {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.project-meeting-shortcuts kbd {
+  font: inherit;
+  font-size: 16px;
+  color: var(--muted);
+  margin-left: 9px;
+  white-space: nowrap;
+}
+.project-overview-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+.project-overview-stat {
+  padding: 17px 20px;
+}
+.project-overview-stat + .project-overview-stat {
+  border-left: 1px solid var(--line);
+}
+.project-overview-stat > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 16px;
+}
+.project-overview-stat .icon {
+  width: 15px;
+  height: 15px;
+}
+.project-overview-stat strong {
+  display: block;
+  font-size: 27px;
+  font-weight: 500;
+  margin-top: 3px;
+}
+.project-meetings-empty {
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  padding: 18px 20px;
+  color: var(--muted);
+  font-size: 16px;
+}
+.project-context-heading {
+  margin-bottom: 14px;
+}
+@container content (max-width: 880px) {
+  .project-overview-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+@media (max-width: 720px) {
+  .project-overview-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .project-overview-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .project-overview-stat {
+    padding: 12px 14px;
+  }
+  .project-overview-stat:nth-child(3) {
+    border-left: 0;
+  }
+  .project-overview-stat:nth-child(n + 3) {
+    border-top: 1px solid var(--line);
+  }
+  .project-meeting-shortcuts .btn {
+    flex: 1;
+    justify-content: flex-start;
+  }
+  .project-meeting-shortcuts {
+    width: 100%;
+  }
+  .project-meeting-shortcuts kbd {
+    display: none;
+  }
+}

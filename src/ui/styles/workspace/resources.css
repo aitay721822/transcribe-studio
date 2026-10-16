@@ -1,0 +1,78 @@
+.meeting-title-input {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  min-width: 0;
+  width: 300px;
+  flex: 1;
+  font-weight: 600;
+  font-size: 16px;
+}
+.record-strip {
+  height: auto;
+  min-height: 56px;
+  flex-wrap: wrap;
+  padding: 8px 22px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+  border-bottom: 1px solid var(--line);
+  background: var(--accent-soft);
+  font-size: 16px;
+}
+.record-strip .timer {
+  font: 16px Georgia;
+}
+.record-strip .button-row {
+  margin-left: auto;
+}
+.project-root {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+.project-root > div {
+  flex: 1;
+  min-width: 0;
+}
+.project-root strong {
+  font-weight: 500;
+}
+.project-root small {
+  display: block;
+  font-size: 16px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.file-list-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 16px;
+}
+.file-list-item > div {
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+.file-list-item small {
+  font-size: 16px;
+  color: var(--muted);
+  display: block;
+}
+.file-list-item input {
+  accent-color: var(--accent);
+}
+.audio-player {
+  width: 100%;
+  height: 44px;
+  margin: 10px 0;
+}
+.audio-player::-webkit-media-controls-current-time-display,
+.audio-player::-webkit-media-controls-time-remaining-display {
+  font-size: 16px;
+}

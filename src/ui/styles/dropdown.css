@@ -1,0 +1,156 @@
+.dropdown-control {
+  position: relative;
+  min-width: 0;
+  width: 100%;
+}
+.dropdown-native {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0;
+  clip-path: inset(50%);
+  padding: 0;
+  pointer-events: none;
+}
+.dropdown-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--panel) 82%, transparent);
+  text-align: left;
+  font-size: 16px;
+  font-weight: 500;
+}
+.dropdown-trigger:hover,
+.dropdown-trigger[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--ink) 8%, var(--panel));
+}
+.dropdown-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dropdown-chevron {
+  display: flex;
+  color: var(--muted);
+}
+.dropdown-chevron .icon {
+  width: 14px;
+  height: 14px;
+}
+.dropdown-popup {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: 6px;
+  display: none;
+  flex-direction: column;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--line) 85%, transparent);
+  background: color-mix(in srgb, var(--panel) 82%, transparent);
+  color: var(--ink);
+  backdrop-filter: blur(28px) saturate(110%);
+  box-shadow: 0 12px 36px #0003;
+  font: inherit;
+  overflow: hidden;
+}
+.dropdown-popup:popover-open {
+  display: flex;
+}
+.dropdown-search {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: 7px;
+  padding: 3px 7px 7px;
+  color: var(--muted);
+}
+.dropdown-search > .icon {
+  width: 14px;
+  height: 14px;
+}
+.dropdown-search input {
+  width: 100%;
+  min-width: 0;
+  padding: 4px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-size: 16px;
+  outline: none;
+}
+.dropdown-options {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  min-height: 0;
+  scroll-padding-block: 4px;
+}
+.dropdown-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 29px;
+  padding: 4px 8px;
+  border-radius: 9px;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: left;
+}
+.dropdown-option > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dropdown-option.is-active:not(:disabled),
+.dropdown-option:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ink) 11%, transparent);
+}
+.dropdown-check {
+  display: flex;
+  width: 15px;
+  flex: none;
+  color: var(--muted);
+}
+.dropdown-check .icon {
+  width: 15px;
+  height: 15px;
+}
+.dropdown-group {
+  padding: 6px 8px 3px;
+  font-size: 16px;
+  color: var(--muted);
+}
+.dropdown-empty {
+  padding: 14px 8px;
+  color: var(--muted);
+  font-size: 16px;
+}
+.device-picker > .dropdown-control {
+  flex: 1;
+}
+.agent-composer .dropdown-control {
+  width: auto;
+  flex: 1;
+}
+.agent-composer .dropdown-trigger {
+  min-height: 38px;
+  padding: 3px 9px;
+}
+.filters .dropdown-control {
+  max-width: 190px;
+}
+@media (prefers-reduced-transparency: reduce) {
+  .dropdown-popup {
+    background: var(--panel);
+    backdrop-filter: none;
+  }
+}

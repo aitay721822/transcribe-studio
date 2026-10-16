@@ -1,0 +1,107 @@
+:root {
+  --motion-fast: 120ms;
+  --motion-enter: 200ms;
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+.motion-view {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+.toast {
+  animation: none;
+}
+.btn,
+[data-slot="button"],
+.prompt-chip,
+.settings-nav button,
+.project-sidebar-row,
+.project-row-actions,
+.dropdown-chevron,
+.tab {
+  transition:
+    background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    color var(--motion-fast) ease,
+    opacity var(--motion-fast) ease,
+    transform var(--motion-fast) var(--motion-ease);
+}
+.btn:not(:disabled):active,
+[data-slot="button"]:not(:disabled):active,
+.prompt-chip:not(:disabled):active {
+  transform: scale(0.98);
+}
+.dropdown-trigger[aria-expanded="true"] .dropdown-chevron {
+  transform: rotate(180deg);
+}
+@media (hover: hover) {
+  .prompt-chip:not(:disabled):hover {
+    transform: translateY(-1px);
+  }
+}
+dialog[open],
+.dropdown-popup:popover-open,
+.project-context-menu:popover-open {
+  animation: studio-surface-enter var(--motion-enter) var(--motion-ease);
+}
+dialog[open]::backdrop {
+  animation: studio-fade-enter var(--motion-enter) ease;
+}
+[role="tabpanel"]:not([hidden]),
+.document-preview,
+.setup-wizard .error:not(:empty) {
+  animation: studio-content-enter var(--motion-enter) var(--motion-ease);
+}
+@keyframes studio-surface-enter {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+    scale: 0.985;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+}
+@keyframes studio-content-enter {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@keyframes studio-fade-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (max-width: 900px) {
+  .compact-shell #project-navigation {
+    translate: -100% 0;
+    transition: translate var(--motion-enter) var(--motion-ease);
+  }
+  .compact-shell.drawer-open #project-navigation {
+    translate: 0 0;
+  }
+  .navigation-backdrop {
+    animation: studio-fade-enter var(--motion-enter) ease;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after,
+  *::backdrop {
+    animation: none !important;
+    transition: none !important;
+  }
+}

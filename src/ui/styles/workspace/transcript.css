@@ -1,0 +1,31 @@
+.segment {
+  padding: 0 0 20px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid var(--line);
+}
+.segment-meta {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 7px;
+  color: var(--muted);
+  font-size: 16px;
+}
+.segment-time {
+  font: 16px Georgia;
+  color: var(--accent);
+}
+.segment p {
+  font-size: 16px;
+  margin: 0;
+  line-height: 1.95;
+  white-space: pre-wrap;
+}
+.segment.partial p {
+  color: var(--muted);
+}
+.segment.partial::after {
+  content: "辨識中…";
+  font-size: 16px;
+  color: var(--muted);
+}

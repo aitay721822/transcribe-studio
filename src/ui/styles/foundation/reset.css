@@ -1,0 +1,79 @@
+* {
+  box-sizing: border-box;
+}
+html {
+  --font-size-min: 16px;
+  font-size: var(--font-size-min);
+}
+small,
+code,
+pre,
+kbd,
+samp,
+sub,
+sup {
+  font-size: max(var(--font-size-min), 1em);
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Studio, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.65;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+button,
+input,
+select,
+textarea {
+  outline: none;
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+button {
+  border: 0;
+  background: transparent;
+}
+input,
+select,
+textarea {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 7px;
+  padding: 9px 12px;
+}
+textarea {
+  resize: vertical;
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+}
+.icon {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  vertical-align: middle;
+}
+.error {
+  color: var(--error);
+}

@@ -1,0 +1,168 @@
+.marked-editor {
+  position: relative;
+  flex: 1;
+  min-height: 140px;
+  background: var(--editor);
+}
+.marked-editor .notes-editor,
+.notes-backdrop {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  margin: 0;
+  padding: 28px 30px;
+  font: inherit;
+  font-size: 16px;
+  line-height: 2.1;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  tab-size: 8;
+  scrollbar-gutter: stable;
+}
+.marked-editor .notes-editor {
+  background: transparent;
+}
+.notes-backdrop {
+  color: transparent;
+  overflow: hidden;
+  pointer-events: none;
+}
+.note-highlight {
+  background: var(--accent-soft);
+  color: inherit;
+  border-bottom: 2px solid var(--accent);
+}
+.note-annotations {
+  flex: none;
+  max-height: 30%;
+  min-height: 80px;
+  overflow: auto;
+  border-top: 1px solid var(--line);
+  padding: 12px 20px;
+  background: var(--panel);
+}
+.annotation-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.annotation-heading button,
+.annotation-add {
+  color: var(--accent);
+  padding: 8px 0;
+  text-align: left;
+}
+.note-annotation {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.note-annotation blockquote,
+.annotation-quote {
+  margin: 12px 0;
+  padding-left: 12px;
+  border-left: 3px solid var(--accent);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 150px;
+  overflow: auto;
+}
+.note-annotation p {
+  margin: 8px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.note-annotation.stale {
+  border-style: dashed;
+}
+.note-annotation.resolved {
+  color: var(--muted);
+}
+.annotation-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+.selection-toolbar {
+  position: fixed;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  max-width: calc(100vw - 24px);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: 0 4px 16px #0002;
+  font-size: 16px;
+}
+.selection-toolbar:hover {
+  background: var(--accent-soft);
+}
+.selection-toolbar kbd {
+  color: var(--muted);
+  font: inherit;
+}
+.source-citation {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: baseline;
+  margin: 0 3px;
+  padding: 2px 7px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 16px;
+  line-height: 1.7;
+  border: 1px solid var(--line);
+  cursor: pointer;
+}
+.source-popover {
+  z-index: 1000;
+  width: min(380px, calc(100vw - 32px));
+  max-height: min(440px, 70vh);
+  overflow: auto;
+  padding: 16px;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 12px 36px #0003;
+  font-size: 16px;
+}
+.source-popover-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.source-popover-heading button {
+  padding: 4px 8px;
+}
+.source-popover p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.8;
+  margin: 12px 0;
+}
+.source-popover small,
+.source-popover code {
+  display: block;
+  color: var(--muted);
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+.source-popover-arrow {
+  fill: var(--panel);
+}
+.annotation-scope {
+  padding: 8px 0;
+  font-size: 16px;
+}
