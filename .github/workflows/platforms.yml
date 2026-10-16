@@ -34,11 +34,17 @@ jobs:
         run: npm run test:ui
       - if: runner.os == 'macOS'
         run: npm run test:ui:platform
-      - if: runner.os == 'macOS'
-        name: Build native macOS artifacts
+      - if: runner.os == 'macOS' && !inputs.signed_release
+        name: Build unsigned macOS verification artifacts
         run: node scripts/build/package.cjs mac
         env:
-          STUDIO_MAC_RELEASE: ${{ inputs.signed_release && '1' || '0' }}
+          STUDIO_MAC_RELEASE: '0'
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - if: runner.os == 'macOS' && inputs.signed_release
+        name: Build signed and notarized macOS release
+        run: node scripts/build/package.cjs mac
+        env:
+          STUDIO_MAC_RELEASE: '1'
           CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}

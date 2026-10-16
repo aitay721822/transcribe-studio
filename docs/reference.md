@@ -217,7 +217,7 @@ Windows 的憑證密文不能直接在 Mac 解密。Mac 正式版本應使用一
 
 `.github/workflows/platforms.yml` 提供 Windows 與 macOS arm64 的單元／平台 UI／Mac 封裝與封裝後 Claude 測試。
 CI 使用虛擬資料驗證邏輯；實機驗收另需檢查麥克風、系統音訊、混音、拒絕／撤銷權限、多螢幕與裝置拔除，並確認錄音中暫停、取消及退出不殘留 CLI。
-一般 Mac 建置不公證；正式建置設定 `STUDIO_MAC_RELEASE=1`，會強制要求簽章與公證。CI 手動執行的 `signed_release` 使用 repository secrets：`MAC_CSC_LINK`、`MAC_CSC_KEY_PASSWORD`、`APPLE_ID`、`APPLE_APP_SPECIFIC_PASSWORD`、`APPLE_TEAM_ID`；不可將憑證值寫進專案。
+一般 Mac 驗證建置停用簽章身分自動偵測，不傳入憑證或公證 secrets。正式建置設定 `STUDIO_MAC_RELEASE=1`，會先檢查必要設定，再強制要求簽章與公證。CI 手動執行的 `signed_release` 使用 repository secrets：`MAC_CSC_LINK`（憑證檔案或其 Base64 內容）、`MAC_CSC_KEY_PASSWORD`（憑證密碼）、`APPLE_ID`、`APPLE_APP_SPECIFIC_PASSWORD`、`APPLE_TEAM_ID`；不可將憑證值寫進專案。無密碼憑證可留空密碼；缺少憑證或公證帳號設定時，正式建置會直接報錯，不會降級成未簽章套件。
 `npm run test:ui:platform` 驗證平台介面與真實系統加密；封裝後以 `npm run test:packaged` 驗證 .app、加密設定與隨附 Claude 工具回合。
 
 自動測試涵蓋 SQLite 持久化／版本衝突、工作區路徑隔離、字幕解析、DOCX、WebSocket 串流、MCP stdio 工具與 Agent function loop／取消。Electron UI 測試使用隔離測試資料目錄及模擬麥克風，驗證專案、編輯、自動儲存、版本歷史、主題、錄音、暫停／繼續、播放、WebSocket PCM、WebRTC signaling／data channel、Agent 修訂提案與衝突，以及 native DOCX 匯出。

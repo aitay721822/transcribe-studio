@@ -17,4 +17,37 @@ function packageArguments(target, arch, platform = process.platform, release = f
   return args;
 }
 
-module.exports = { packageArguments };
+function packageEnvironment(platform = process.platform, release = false, source = process.env) {
+  const env = {
+    ...source,
+    ELECTRON_BUILDER_COMPRESSION_LEVEL: source.ELECTRON_BUILDER_COMPRESSION_LEVEL || '5',
+  };
+  if (platform !== 'darwin') return env;
+  if (release) {
+    const required = ['CSC_LINK', 'APPLE_ID', 'APPLE_APP_SPECIFIC_PASSWORD', 'APPLE_TEAM_ID'];
+    const missing = required.filter((name) => !env[name]?.trim());
+    if (missing.length)
+      throw new Error(
+        `Signed macOS release requires: ${missing.join(', ')}. Configure the release secrets before packaging.`
+      );
+    env.CSC_IDENTITY_AUTO_DISCOVERY = 'true';
+  } else {
+    // Empty CSC_LINK resolves to cwd in electron-builder; verification builds never import certificates.
+    for (const name of [
+      'CSC_LINK',
+      'CSC_KEY_PASSWORD',
+      'CSC_NAME',
+      'CSC_KEYCHAIN',
+      'CSC_INSTALLER_LINK',
+      'CSC_INSTALLER_KEY_PASSWORD',
+      'APPLE_ID',
+      'APPLE_APP_SPECIFIC_PASSWORD',
+      'APPLE_TEAM_ID',
+    ])
+      delete env[name];
+    env.CSC_IDENTITY_AUTO_DISCOVERY = 'false';
+  }
+  return env;
+}
+
+module.exports = { packageArguments, packageEnvironment };

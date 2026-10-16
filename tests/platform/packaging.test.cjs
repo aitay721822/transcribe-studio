@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const childProcess = require('node:child_process');
-const { packageArguments } = require('../../scripts/build/targets.cjs');
+const { packageArguments, packageEnvironment } = require('../../scripts/build/targets.cjs');
 const {
   actionShortcut,
   shortcutLabel,
@@ -51,6 +51,58 @@ test('Mac bundle verification rejects Intel and universal bundles before checkin
       /Apple Silicon/
     );
   await verifyMacBundle({ electronPlatformName: 'win32', arch: 1 });
+});
+
+test('unsigned Mac verification ignores empty and inherited signing credentials without mutating the caller', () => {
+  for (const link of ['', '   ', 'fixture-certificate.p12']) {
+    const source = {
+      CSC_LINK: link,
+      CSC_KEY_PASSWORD: 'secret',
+      APPLE_ID: 'private',
+      PATH: 'tools',
+    };
+    const env = packageEnvironment('darwin', false, source);
+    assert.equal('CSC_LINK' in env, false);
+    assert.equal('CSC_KEY_PASSWORD' in env, false);
+    assert.equal('APPLE_ID' in env, false);
+    assert.equal(env.CSC_IDENTITY_AUTO_DISCOVERY, 'false');
+    assert.equal(env.PATH, 'tools');
+    assert.equal(source.CSC_LINK, link);
+    assert.equal(source.CSC_KEY_PASSWORD, 'secret');
+  }
+});
+
+test('signed Mac releases validate missing secrets, preserve certificate passwords and require signing', () => {
+  assert.throws(
+    () => packageEnvironment('darwin', true, { CSC_LINK: ' ' }),
+    /requires: CSC_LINK, APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD, APPLE_TEAM_ID/
+  );
+  const source = {
+    CSC_LINK: 'fixture-certificate.p12',
+    CSC_KEY_PASSWORD: ' secret ',
+    APPLE_ID: 'fixture-id',
+    APPLE_APP_SPECIFIC_PASSWORD: 'fixture-password',
+    APPLE_TEAM_ID: 'fixture-team',
+  };
+  const env = packageEnvironment('darwin', true, source);
+  for (const name of Object.keys(source)) assert.equal(env[name], source[name]);
+  assert.equal(env.CSC_IDENTITY_AUTO_DISCOVERY, 'true');
+  assert(
+    packageArguments('mac', 'arm64', 'darwin', true).includes('--config.forceCodeSigning=true')
+  );
+  assert.throws(
+    () => packageEnvironment('darwin', true, { ...source, APPLE_TEAM_ID: '' }),
+    /requires: APPLE_TEAM_ID/
+  );
+});
+
+test('Windows packaging retains its signing configuration and compression override', () => {
+  const source = {
+    CSC_LINK: 'windows.p12',
+    CSC_KEY_PASSWORD: 'password',
+    ELECTRON_BUILDER_COMPRESSION_LEVEL: '9',
+  };
+  assert.deepEqual(packageEnvironment('win32', false, source), source);
 });
 
 test('Mac bundle verification passes file paths before lipo architecture flags and preserves diagnostics', async (t) => {
