@@ -65,7 +65,7 @@ test('Windows CLI and ordinary grandchildren share a hidden console, with intact
 
     assert.equal(decode(rows[0].input), '逐字稿輸入');
     assert.deepEqual(decode(rows[0].args).split('\0'), args);
-    assert.equal(decode(rows[0].cwd), directory);
+    assert.equal(await fs.realpath(decode(rows[0].cwd)), await fs.realpath(directory));
     assert.equal(decode(rows[0].env), '繼承環境');
     const failed = await collect(spawnHidden(file, ['--exit']));
     assert.equal(failed.code, 23);

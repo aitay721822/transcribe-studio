@@ -35,7 +35,7 @@ async function main() {
     assert.equal(permission.platform, process.platform);
     if (process.platform === 'darwin') {
       const native = await app.evaluate(({ BrowserWindow, Menu }) => ({
-        position: BrowserWindow.getAllWindows()[0].getTrafficLightPosition(),
+        position: BrowserWindow.getAllWindows()[0].getWindowButtonPosition(),
         edit: Menu.getApplicationMenu().items.some(
           (item) => item.role?.toLowerCase() === 'editmenu'
         ),
