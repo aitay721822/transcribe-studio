@@ -36,9 +36,10 @@
 }
 .tabs {
   display: flex;
-  gap: 15px;
+  align-items: center;
+  gap: 6px;
   border-bottom: 1px solid var(--line);
-  padding: 0 20px;
+  padding: 8px 12px;
   height: auto;
   min-height: 48px;
   flex-wrap: wrap;
@@ -47,10 +48,15 @@
 .tab {
   color: var(--muted);
   font-size: 16px;
-  padding: 10px 0;
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  box-shadow: none;
 }
 .tab.active {
   color: var(--accent);
+  background: var(--accent-soft);
+  border-color: var(--accent-soft);
 }
 .notes-save {
   margin-left: auto;

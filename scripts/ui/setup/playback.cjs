@@ -5,6 +5,53 @@ const path = require('node:path');
 const assert = require('node:assert/strict');
 const { build } = require('esbuild');
 
+async function withoutPlayback(page) {
+  await page.locator('#audio-device').selectOption('mic:usb');
+  assert.equal(await page.locator('#audio-device-playback').inputValue(), 'none');
+  await page.locator('[data-action="test-asr-connection"]').click();
+  await page.waitForFunction(
+    () => !document.querySelector('#connection-device-playback')?.disabled
+  );
+  assert.equal(await page.locator('#connection-device-playback').inputValue(), 'none');
+  assert.equal(await page.locator('#connection-device').inputValue(), 'mic:usb');
+  await page.locator('#connection-device').selectOption('none');
+  assert.equal(await page.locator('#connection-start').isDisabled(), true);
+  await page.locator('[data-close-modal]').click();
+  await assert.rejects(
+    page.evaluate(() =>
+      window.studio.invoke('media:playback-start', 'offline', 'missing-endpoint')
+    ),
+    /離線/
+  );
+  await page.locator('[data-action="test-audio"]').click();
+  await page.getByText('來源已連接，播放聲音或說話以確認音量。', { exact: true }).waitFor();
+  await page.locator('[data-close-modal]').click();
+  await page.locator('#record-only').check();
+  await page.locator('[data-action="new-meeting"]').click();
+  await page.locator('#name-input').fill('無播放裝置的麥克風錄音');
+  await page.locator('#name-confirm').click();
+  await page.locator('[data-action="stop-recording"]').waitFor();
+  await page.waitForFunction(() => {
+    const timer = document.querySelector('#record-timer')?.textContent;
+    return timer && timer.split(':').reduce((sum, part) => sum * 60 + Number(part), 0) >= 1;
+  });
+  await page.locator('[data-action="stop-recording"]').click();
+  await page.getByText('錄音已儲存', { exact: true }).waitFor();
+  const recording = await page.evaluate(
+    async () => (await window.studio.invoke('bootstrap')).meetings[0]
+  );
+  assert(recording.recordings[0].bytes > 0);
+  assert(recording.duration >= 1);
+  assert.equal(await page.evaluate(() => window.lastMicrophone), 'usb');
+  assert.equal(await page.evaluate(() => localStorage.getItem('studio.microphone')), 'usb');
+  await page.reload();
+  await page.locator('.shell').waitFor();
+  assert.equal(await page.evaluate(() => localStorage.getItem('studio.source')), 'mic');
+  console.log(
+    'No-playback checks passed: empty-source guard, microphone selection/test/recording, offline endpoint rejection and persisted selection. SKIP native per-endpoint loopback: no connected playback endpoint.'
+  );
+}
+
 async function main() {
   if (process.platform !== 'win32') {
     console.log(
@@ -24,6 +71,12 @@ async function main() {
   });
   try {
     const page = await require('./helpers.cjs').desktopWindow(app);
+    // Exercise the hardware-free branch on developer machines without changing production code.
+    if (process.argv.includes('--no-playback'))
+      await app.evaluate(({ ipcMain }) => {
+        ipcMain.removeHandler('media:playback-devices');
+        ipcMain.handle('media:playback-devices', () => []);
+      });
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await require('./helpers.cjs').overview(page);
@@ -71,7 +124,6 @@ async function main() {
     assert.equal(await microphone.inputValue(), 'mic:');
     assert.equal(await playback.inputValue(), 'none');
     const outputs = await page.evaluate(() => window.studio.invoke('media:playback-devices'));
-    assert(outputs.length > 0, 'Windows integration requires a connected playback endpoint');
     for (const device of outputs)
       assert.equal(
         (await playback.locator('option').filter({ hasText: device.label }).count()) >= 1,
@@ -84,6 +136,11 @@ async function main() {
       await page.evaluate(async () => (await window.studio.invoke('bootstrap')).meetings.length),
       0
     );
+    if (!outputs.length) {
+      await withoutPlayback(page);
+      assert.deepEqual(errors, []);
+      return;
+    }
     await playback.selectOption(outputs[0].id);
     assert.equal(await microphone.inputValue(), 'none');
     await microphone.selectOption('mic:usb');
@@ -242,6 +299,10 @@ async function main() {
     );
   } finally {
     await app.close();
+    const profile = env.STUDIO_TEST_DATA;
+    assert.equal(path.dirname(profile), path.resolve(os.tmpdir()));
+    assert(path.basename(profile).startsWith('studio-playback-'));
+    await fs.rm(profile, { recursive: true, force: true });
   }
 }
 
