@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
 import ffmpegPath from 'ffmpeg-static';
+import { stopChild } from '../../runtime/process';
 
 /** FFmpeg performs DSP outside both Electron's renderer and main thread. */
 export async function runFfmpeg(
@@ -36,7 +37,9 @@ export async function runFfmpeg(
   });
   const closed = new Promise<number | null>((resolve) => child.once('close', resolve));
 
-  const abort = () => child.kill();
+  const abort = () => {
+    void stopChild(child, { group: false });
+  };
 
   signal.addEventListener('abort', abort, { once: true });
   if (signal.aborted) abort();
@@ -57,7 +60,8 @@ export async function runFfmpeg(
     if (code !== 0) throw new Error('音訊前處理失敗，請確認檔案完整且包含音訊，並檢查暫存磁碟空間');
   } finally {
     signal.removeEventListener('abort', abort);
-    if (child.exitCode === null && child.signalCode === null) child.kill();
+    if (child.exitCode === null && child.signalCode === null)
+      await stopChild(child, { group: false });
     await closed;
   }
 }

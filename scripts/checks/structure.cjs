@@ -13,7 +13,9 @@ function checkLines(filename) {
     ['package-lock.json', 'pnpm-lock.yaml', 'yarn.lock', 'npm-shrinkwrap.json'].includes(
       path.basename(filename)
     ) ||
-    !/\.(tsx?|[cm]?js|css|html|json|md|py|ps1|sh|ya?ml|toml|sql|svg|txt|cs)$/.test(filename)
+    !/\.(tsx?|[cm]?js|css|html|json|md|py|ps1|sh|ya?ml|toml|sql|svg|txt|cs|plist|xml)$/.test(
+      filename
+    )
   )
     return;
   const text = fs.readFileSync(filename, 'utf8');
@@ -39,12 +41,7 @@ function visit(dir) {
   checkedDirectories++;
   if (files.length > limits.files || dirs.length > limits.folders)
     errors.push(
-      (path.relative(root, dir) || '.') +
-        ': ' +
-        files.length +
-        ' files, ' +
-        dirs.length +
-        ' folders; maximum 10 files / 10 folders, group by business responsibility'
+      `${path.relative(root, dir) || '.'}: ${files.length} files, ${dirs.length} folders; maximum 10 files / 10 folders, group by business responsibility`
     );
   for (const file of files) checkLines(path.join(dir, file.name));
   for (const entry of dirs) visit(path.join(dir, entry.name));

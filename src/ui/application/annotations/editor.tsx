@@ -3,6 +3,7 @@ import type { Meeting, UiState } from '../../../domain/models';
 import { btn, empty } from '../../components/display';
 import { invalidateUI } from '../../layout/roots';
 import { Textarea } from '../../primitives/textarea';
+import { shortcutLabel } from '../platform/shortcuts';
 import { markdown, markedText } from './markdown';
 import { previewSelection } from './selection';
 import { SelectionToolbar } from './selection/toolbar';
@@ -177,7 +178,7 @@ export function NotesPane({ meeting: m, state }: { meeting: Meeting; state: UiSt
       )}
       <div className="editor-footer">
         <span id="word-count">{m.notes.length} 字</span>
-        <span>Ctrl S 儲存 · 選取文字後加入修改標記</span>
+        <span>{shortcutLabel('S')} 儲存 · 選取文字後加入修改標記</span>
       </div>
     </section>
   );

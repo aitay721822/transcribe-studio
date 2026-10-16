@@ -1,0 +1,57 @@
+name: Desktop platform verification
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      signed_release:
+        description: Sign and notarize macOS artifacts using configured repository secrets
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2025, macos-15, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --include=optional
+      - run: npx --no-install install-electron
+      - run: npm test
+      - if: runner.os == 'Windows'
+        run: npm run test:ui
+      - if: runner.os == 'macOS'
+        run: npm run test:ui:platform
+      - if: runner.os == 'macOS'
+        name: Build native macOS artifacts
+        run: node scripts/build/package.cjs mac
+        env:
+          STUDIO_MAC_RELEASE: ${{ inputs.signed_release && '1' || '0' }}
+          CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      - if: runner.os == 'macOS'
+        run: npm run test:packaged
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: desktop-${{ matrix.os }}
+          if-no-files-found: ignore
+          path: |
+            release/*.dmg
+            release/*.zip
+            output/playwright/*.png

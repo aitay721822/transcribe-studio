@@ -6,8 +6,10 @@ export type { InputDevice } from '../../domain/audio-devices';
 export async function listInputDevices(requestPermission = false): Promise<InputDevice[]> {
   let stream: MediaStream | undefined;
   try {
-    if (requestPermission)
+    if (requestPermission) {
+      if (typeof window !== 'undefined') await window.studio?.invoke('media:prepare', 'mic');
       stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    }
     const track = stream?.getAudioTracks()[0];
     const devices = await navigator.mediaDevices.enumerateDevices();
     return inputDeviceCatalog(
@@ -22,6 +24,7 @@ export async function listInputDevices(requestPermission = false): Promise<Input
 export async function openAudioSources(source: string, microphoneId = ''): Promise<MediaStream[]> {
   const streams: MediaStream[] = [];
   try {
+    if (typeof window !== 'undefined') await window.studio?.invoke('media:prepare', source);
     if (source !== 'mic') {
       const system = await navigator.mediaDevices.getDisplayMedia({
         audio: true,
@@ -29,6 +32,8 @@ export async function openAudioSources(source: string, microphoneId = ''): Promi
       });
       streams.push(system);
       if (!system.getAudioTracks().length) throw new Error('沒有取得系統音訊，請確認音訊擷取權限');
+      if (system.getAudioTracks().every((track) => track.readyState === 'ended'))
+        throw new Error('系統音訊串流已結束，請重新選擇來源並檢查系統錄音權限');
     }
     if (source !== 'system')
       streams.push(

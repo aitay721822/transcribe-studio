@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Meeting, Project, UiState } from '../../domain/models';
+import { shortcutLabel } from '../application/platform/shortcuts';
 import { icon } from '../components/icons';
 import { Button } from '../primitives/button';
 
@@ -33,7 +34,7 @@ export function projectOverview(
             data-action="project-live"
             disabled={Boolean(disabled)}
           >
-            {icon('mic')}即時會議<kbd>Ctrl+Alt+M</kbd>
+            {icon('mic')}即時會議<kbd>{shortcutLabel('M', true)}</kbd>
           </Button>
           <Button
             variant="outline"
@@ -41,7 +42,7 @@ export function projectOverview(
             data-action="project-import"
             disabled={Boolean(disabled)}
           >
-            {icon('upload')}音檔辨識<kbd>Ctrl+Alt+I</kbd>
+            {icon('upload')}音檔辨識<kbd>{shortcutLabel('I', true)}</kbd>
           </Button>
         </div>
       </div>

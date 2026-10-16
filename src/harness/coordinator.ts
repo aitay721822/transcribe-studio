@@ -11,6 +11,7 @@ import { executionLimits } from '../domain/agents/limits';
 import type { AgentEvent, AgentRequest, AgentRun, AgentStore, ImageData } from '../domain/models';
 import { setupReadiness } from '../domain/readiness';
 import { contextReferences } from '../domain/references/context';
+import { credentialRedactor } from '../services/security/redaction';
 import { validateReferences } from '../services/workspace/references/resolve';
 import { ApprovalQueue } from './approvals';
 import { compactConversation } from './context/compact';
@@ -146,6 +147,7 @@ export class Agent {
     if (!project) throw new Error('找不到專案');
     if (request.references) await this.resolveReferences(request);
     const settings = this.store.settings();
+    const redact = credentialRedactor(settings);
     const backend =
       settings.llm.backend === 'responses' ? 'openai' : settings.llm.backend || 'openai';
     const adapter = this.adapters.get(backend);
@@ -167,6 +169,9 @@ export class Agent {
 
     const send = (event: AgentEvent) => {
       event = { id: randomUUID(), timestamp: new Date().toISOString(), ...event };
+      if (event.message) event.message = redact.text(event.message);
+      if (event.args !== undefined) event.args = redact.value(event.args);
+      if (event.result !== undefined) event.result = redact.value(event.result);
       run.events.push(event);
       this.store.saveRun(run);
       this.emit({ ...event, runId: run.id, meetingId: meeting.id });

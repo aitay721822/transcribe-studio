@@ -44,7 +44,7 @@ export function useInputDevices(busy: boolean, initialDevices: InputDevice[] = [
 
   useEffect(() => {
     alive.current = true;
-    void refresh();
+    void refresh(document.documentElement.dataset.platform !== 'darwin');
 
     const changed = () => {
       if (busyRef.current) missedChange.current = true;

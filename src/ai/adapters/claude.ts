@@ -4,6 +4,7 @@ import path from 'node:path';
 import { agentAuth, agentModel } from '../../domain/agents/auth';
 import type { ImageData } from '../../domain/models';
 import { notesSchema, parseNotes } from '../../harness/prompt';
+import { bundledClaude } from '../../services/agents/bundled';
 import { agentEnv, agentHome } from '../../services/agents/config';
 import { agentError } from '../../services/agents/errors';
 import { executableCandidates } from '../../services/agents/executable';
@@ -15,12 +16,7 @@ import type { HarnessAdapter, HarnessContext } from '../contracts';
 export async function findClaudeExecutable(configured = '', allowBundled = false) {
   const [local] = await executableCandidates('claude', configured);
   if (local) return local;
-  if (!configured && allowBundled && process.platform === 'win32') {
-    const file = require
-      .resolve(`@anthropic-ai/claude-agent-sdk-win32-${process.arch}/claude.exe`)
-      .replace(`.asar${path.sep}`, `.asar.unpacked${path.sep}`);
-    if ((await fs.stat(file)).isFile()) return file;
-  }
+  if (!configured && allowBundled) return bundledClaude();
   throw new Error('找不到 Claude Code CLI，請安裝並執行 claude auth login，或指定 CLI 路徑。');
 }
 

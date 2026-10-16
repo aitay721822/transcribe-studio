@@ -3,6 +3,7 @@ import { icon } from '../../components/icons';
 import { Button } from '../../primitives/button';
 import { Input } from '../../primitives/input';
 import { projectSidebar } from '../../projects/sidebar';
+import { shortcutLabel } from '../platform/shortcuts';
 import type { PageContext } from './contracts';
 
 export function chromeViews(context: PageContext) {
@@ -115,7 +116,7 @@ export function chromeViews(context: PageContext) {
         </div>
         <div className="top-spacer" />
         <button className="search-button" data-action="search">
-          {icon('search')}搜尋會議<span className="key">Ctrl K</span>
+          {icon('search')}搜尋會議<span className="key">{shortcutLabel('K')}</span>
         </button>
         {state.view === 'workspace' ? (
           btn('匯出 Word', 'export', 'download', 'small')

@@ -1,6 +1,7 @@
 import type { AsrEvent, AsrSettings } from '../../domain/asr/config';
 import { realtimeRate } from '../../domain/asr/realtime';
 import type { Invoke } from '../../domain/ipc';
+import { AudioHealth } from './lifecycle/health';
 import { flushPcm } from './lifecycle/pcm';
 import { openAudioSources } from './sources';
 
@@ -115,11 +116,19 @@ export class AudioCapture {
       this.lastCommit = Date.now();
       this.lastVoice = 0;
       this.hasVoice = false;
+      const health =
+        source === 'mic'
+          ? undefined
+          : new AudioHealth((message) => this.events({ type: 'warning', message }));
       this.worklet.port.onmessage = ({
         data,
       }: MessageEvent<{ level?: number; audio?: ArrayBuffer }>) => {
         if (!this.active || this.paused) return;
         if ('level' in data) {
+          health?.sample(
+            data.level,
+            this.sources[0]?.getAudioTracks().some((track) => track.muted)
+          );
           this.events({ type: 'level', level: data.level });
           if (data.level > 0.012) {
             this.lastVoice = Date.now();

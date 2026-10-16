@@ -17,6 +17,7 @@ import type {
   Skill,
   WorkspaceRoot,
 } from './models';
+import type { MediaPermissions } from './platform';
 import type { FileList, FilePage, WorkspaceOptions } from './workspace';
 
 export interface ConnectionEvent extends AsrEvent {
@@ -89,7 +90,7 @@ export interface IpcCommands {
     scope?: NoteAnnotation[]
   ) => Meeting;
   'meeting:revisions': (id: string) => Revision[];
-  'settings:save': (settings: Partial<Settings>) => Settings;
+  'settings:save': (settings: Partial<Settings>) => Promise<Settings>;
   'agents:detect': (draft?: Partial<LlmSettings>) => Promise<DetectedAgent[]>;
   'connection:asr-start': (id: string, draft: Partial<Settings>) => Promise<SpeechConnection>;
   'connection:asr-audio': (id: string, bytes: ArrayBuffer) => boolean;
@@ -102,7 +103,10 @@ export interface IpcCommands {
   ) => Promise<{ reply: string; backend: string }>;
   'connection:stop': (id: string, graceful?: boolean) => Promise<void>;
   'window:control': (action: string) => void;
-  'clipboard:write': (text: string) => void;
+  'clipboard:write': (text: string) => Promise<void>;
+  'media:status': () => MediaPermissions;
+  'media:prepare': (source: string) => Promise<MediaPermissions>;
+  'media:settings': (kind: 'microphone' | 'screen') => Promise<void>;
   'audio:start': (id: string) => Promise<string>;
   'audio:chunk': (id: string, bytes: ArrayBuffer) => number;
   'audio:finish': (id: string, duration: number) => Meeting;

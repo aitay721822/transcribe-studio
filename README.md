@@ -1,6 +1,6 @@
 # Transcribe Studio
 
-以專案為中心的 TypeScript / Electron 會議記錄助手，第一版優先支援 Windows。
+以專案為中心的 TypeScript / Electron 會議記錄助手。Windows 已有本機驗證；macOS 提供原生封裝、平台適配與 CI 測試入口，實際系統音訊與簽章仍須在 Mac 驗收。
 
 ## 啟動
 
@@ -105,7 +105,7 @@ OpenAI 使用 transcription session 與 24 kHz PCM16，待 session.updated 後�
 
 vLLM 使用 16 kHz PCM16、session.created、含 model 的 session.update，以及 input_audio_buffer.append／commit。解析 transcription.delta／done；結束時傳送 final=true，等待最後文字。vLLM 服務端須部署支援 Realtime 的語音模型。
 
-所有 HTTP／WebSocket API 請求在主程序執行。兩類 API key 及驗證 Headers 分別以 Electron safeStorage 加密保存；畫面回傳遮罩 key。舊版共用 key 會在讀取時補入離線 key，新設定可使用不同憑證。
+所有 HTTP／WebSocket API 請求在主程序執行。整份服務設定以 Electron safeStorage 加密保存；畫面回傳遮罩 key。舊版共用 key 會在讀取時補入離線 key，新設定可使用不同憑證。
 
 ## Agent、MCP 與 Skills
 
@@ -153,6 +153,32 @@ DeepWiki 查詢公開 `openai/codex` 未找到桌面 UI 的材質實作，不能
 
 ## 資料與版本
 
+### 敏感資料盤點（2026-10-16）
+
+本次範圍為憑證加密；其他會議與對話資料保留既有儲存格式。
+
+| 類別 | 位置／處理 | 狀態 |
+| --- | --- | --- |
+| OpenAI、Claude、即時／離線 ASR API key | `studio.sqlite` 的整份 settings 記錄 | 作業系統加密，UI 的 key 欄位回傳遮罩 |
+| 自訂驗證 headers、TURN 密碼、MCP env／args／URL | 同一份加密 settings | 已涵蓋，不依欄位名稱判斷是否加密 |
+| URL query token、ASR init／audioEnvelope 中的憑證 | 同一份加密 settings | 已補齊舊版未涵蓋欄位 |
+| 錯誤訊息、Agent 工具參數與 output | UI 事件及新增 JSONL 事件 | 遮罩已知設定／環境憑證與可辨識 token；保留非敏感工具明細 |
+| 專案名稱、工作區路徑、逐字稿、筆記、標記、版本歷史 | `studio.sqlite` | 未加密，可能包含個資或機密 |
+| 聊天、工具讀取內容、提案、壓縮摘要、session 綁定 | `conversations/*.jsonl` | 未加密；清空對話不刪除原始歷史 |
+| 一般對話圖片及錄音 | `attachments/`、`audio/` | 未加密 |
+| 音訊轉檔／降噪的 PCM 暫存 | 系統暫存目錄 `studio-audio-work-*` | 未加密，正常完成／取消會清理；異常終止可能殘留 |
+| 原生 CLI session 與登入資料 | 應用 runtime／CLI 自有目錄或系統金鑰圈 | 由 CLI 管理，未宣稱受到 Studio 設定加密保護 |
+| 匯出 DOCX、剪貼簿、外部工作區來源文件 | 使用者指定檔案、系統剪貼簿與來源資料夾 | 未加密；不修改來源文件 |
+| 本機 UI 偏好 | Chromium localStorage | 僅側欄／分隔比例、收合、裝置 ID 與降噪選項，未儲存服務憑證 |
+
+加密設定採 `protected-settings:v2:` 格式，使用作業系統帳戶的 safeStorage 金鑰，不在應用目錄另存解密密碼。
+啟動時自動遷移舊版明文／個別欄位加密設定，完成後啟用 SQLite secure_delete、清空 WAL 並 VACUUM，清理目前資料庫中的舊明文頁面。
+此清理不會清除既有備份、作業系統快照或儲存媒體的歷史副本。解密失敗不重設設定或覆寫原資料。
+Windows／macOS 使用系統 safeStorage；Linux 必須有受支援的 libsecret／KWallet 後端，拒絕 basic_text 或未知後端，不退回明文。
+應用運作時仍須在記憶體解密憑證，設定頁的進階 JSON 欄位也需讀取原值才能編輯；磁碟加密不防範已控制目前使用者帳戶的程式。
+服務連線允許自訂 HTTP／WS 端點，這類傳輸本身沒有 TLS 保護；遠端服務應使用 HTTPS／WSS。
+既有 JSONL 與外部 CLI／MCP 的日誌不會被本次遷移重寫；使用者手動貼進筆記或聊天的未知憑證也不保證能自動辨識。
+
 專案、會議、逐字稿與文件版本存於 Electron userData 的 `studio.sqlite`。對話、工具結果、Agent 事件、提案與 session 綁定保存為 `conversations/<meeting-id>.jsonl`，音訊位於 `audio/`。舊版 SQLite 對話會自動遷移，重啟可載入先前對話與提案，未完成執行標記為取消。格式與恢復規則見 [JSONL 說明](docs/conversations.md)。Windows 預設資料目錄通常為 `%APPDATA%/transcribe-studio/`。錄音異常結束後會標示中斷；未完成音訊可能需要修復容器。
 
 工作區根目錄彼此獨立；讀取路徑以 realpath 驗證，拒絕跳出工作區的路徑、`.env`、`.git`、`node_modules`。目前以檔名／文字搜尋取用資料，沒有向量資料庫。Agent 訊息框以 `@` 選擇文件／資料夾，每則最多指定 20 個項目；選單有 220 ms 輸入延遲、背景分頁、取消及直接指定相對路徑。每批最多 20 筆匹配，另提供「交給 Agent 搜尋」關鍵字，不必先在選單找到檔案。指定來源顯示為可移除標籤，送出才交給 Agent，隨排隊／引導與對話原始紀錄保存；已送出訊息保留來源標籤。原「參考檔案」分頁已移除。文字檔以 UTF-8／UTF-16 LE 分段讀取，不設原本的 8 MB 整檔上限；DOCX 仍限制壓縮檔 32 MB、主文件 XML 解壓縮 4 MB，超限會回報錯誤。PDF、舊版 DOC、試算表及其他不支援格式需先轉成文字或 DOCX。
@@ -161,9 +187,30 @@ DeepWiki 查詢公開 `openai/codex` 未找到桌面 UI 的材質實作，不能
 
 ## 驗證與限制
 
+### macOS 建置與驗收
+
+Electron 44 需要 macOS 13 以上。原生系統音訊目前以 macOS 14.2 以上為能力門檻；較舊版本仍可用麥克風或虛擬音訊輸入，不顯示可用的原生系統音訊選項。
+應用會檢查系統權限、區分首次授權與已拒絕／受管理限制，並提供系統設定入口。Mac 首次顯示裝置清單時不主動要求麥克風權限；開始錄音或手動偵測才提出請求。
+系統音訊使用 Electron 原生擷取與可用的系統選擇器。持續無聲僅顯示診斷提示，不把正常靜音誤判為失敗或中止錄音。
+
+在對應架構的 Mac 安裝 Node.js 24，執行 `npm ci --include=optional`、`npx --no-install install-electron`、`npm test`，再執行 `npm run package:mac:arm64` 或 `npm run package:mac:x64`。
+每個架構必須使用獨立、重新安裝的依賴目錄；FFmpeg 與 Claude runtime 的架構會在封裝後以 lipo 檢查，原生執行檔保留執行權限並置於 asar.unpacked。輸出為 DMG 與 ZIP，圖示由同一份 SVG 產生 ICNS。
+Finder 啟動時會補入已知 Homebrew、nvm、Volta 等安裝位置；Node CLI 的 symlink／shebang 入口透過應用 Node runtime 啟動，不執行 shell 設定檔。
+Mac 快捷鍵顯示 Command；標記文字與建立會議使用 Command Shift M，專案音檔辨識使用 Command Shift I。Windows 保留 Ctrl Alt 組合。
+Mac 標題列使用原生視窗按鈕，提供原生編輯選單；Command Q 經由既有關閉與儲存流程。
+
+憑證改用非同步 safeStorage，啟動後從記憶體快照讀取；儲存依序加密成功後才寫入 SQLite。
+無法解密時可解鎖後重試，或經確認先備份原密文至 `locked-settings-*.enc` 再重新輸入服務設定；會議資料保留。備份或加密失敗不重設原設定。
+Windows 的憑證密文不能直接在 Mac 解密。Mac 正式版本應使用一致的 Developer ID 簽章，確保升級後的 Keychain 存取身分穩定。
+
+`.github/workflows/platforms.yml` 提供 Windows、macOS arm64 與 Intel 的單元／平台 UI／Mac 封裝與封裝後 Claude 測試。
+CI 使用虛擬資料驗證邏輯；實機驗收另需檢查麥克風、系統音訊、混音、拒絕／撤銷權限、多螢幕與裝置拔除，並確認錄音中暫停、取消及退出不殘留 CLI。
+一般 Mac 建置不公證；正式建置設定 `STUDIO_MAC_RELEASE=1`，會強制要求簽章與公證。CI 手動執行的 `signed_release` 使用 repository secrets：`MAC_CSC_LINK`、`MAC_CSC_KEY_PASSWORD`、`APPLE_ID`、`APPLE_APP_SPECIFIC_PASSWORD`、`APPLE_TEAM_ID`；不可將憑證值寫進專案。
+`npm run test:ui:platform` 驗證平台介面與真實系統加密；封裝後以 `npm run test:packaged` 驗證 .app、加密設定與隨附 Claude 工具回合。
+
 自動測試涵蓋 SQLite 持久化／版本衝突、工作區路徑隔離、字幕解析、DOCX、WebSocket 串流、MCP stdio 工具與 Agent function loop／取消。Electron UI 測試使用隔離測試資料目錄及模擬麥克風，驗證專案、編輯、自動儲存、版本歷史、主題、錄音、暫停／繼續、播放、WebSocket PCM、WebRTC signaling／data channel、Agent 修訂提案與衝突，以及 native DOCX 匯出。
 
-實際 OpenAI、自訂 ASR 與使用者 MCP 服務需要自己的端點、憑證與裝置測試。系統音訊功能先以 Windows loopback 實作，未宣稱 macOS／Linux 等同可用。尚未提供單一應用音訊擷取、即時講者分離、ASR 自動重連／無縫補傳或可視化富文字編輯。音檔匯入／補辨識上限 1 GB，逐字稿文字檔上限 25 MB；補辨識以追加方式保留原逐字稿。
+實際 OpenAI、自訂 ASR 與使用者 MCP 服務需要自己的端點、憑證與裝置測試。Windows 系統音訊已有本機驗證；macOS 的實際權限、音訊擷取與正式簽章仍需 Mac 驗收，Linux 未開放原生系統音訊選項。尚未提供單一應用音訊擷取、即時講者分離、ASR 自動重連／無縫補傳或可視化富文字編輯。音檔匯入／補辨識上限 1 GB，逐字稿文字檔上限 25 MB；補辨識以追加方式保留原逐字稿。
 
 檔案遍歷、搜尋、解碼與 DOCX 解析在 Node Worker 執行，主程序僅傳遞有界結果與進度。沒有 500 個檔案、10,000 個項目或 10 層目錄的總掃描上限；每批約最多 2 秒，回傳 nextCursor 繼續原掃描，直到 null 才表示完成。清單與全文搜尋獨立，支援檔名篩選、區分大小寫與已掃描量／錯誤資訊；尚無增量索引，磁碟速度仍影響完整掃描耗時。
 

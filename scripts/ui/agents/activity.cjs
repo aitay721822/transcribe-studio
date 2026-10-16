@@ -151,6 +151,16 @@ async function main() {
     assert.deepEqual(input, { offset: 0, limit: 2 });
     assert(output.segments[1].text.endsWith('END-1'));
     assert.equal(output.nextOffset, 2);
+    const nativeClipboard = await app.evaluate(async ({ clipboard }) => {
+      await clipboard.writeText('studio-native-clipboard-probe');
+      const available = (await clipboard.readText()) === 'studio-native-clipboard-probe';
+      const write = clipboard.writeText.bind(clipboard);
+      clipboard.writeText = async (text) => {
+        await write(text);
+        globalThis.studioCopiedTrace = text;
+      };
+      return available;
+    });
     await first
       .locator('.agent-json-detail')
       .nth(1)
@@ -161,10 +171,16 @@ async function main() {
       .nth(1)
       .getByRole('button', { name: '已複製' })
       .waitFor();
-    assert.deepEqual(
-      JSON.parse(await app.evaluate(({ clipboard }) => clipboard.readText())),
-      output
-    );
+    assert.deepEqual(JSON.parse(await app.evaluate(() => globalThis.studioCopiedTrace)), output);
+    if (nativeClipboard)
+      assert.deepEqual(
+        JSON.parse(await app.evaluate(({ clipboard }) => clipboard.readText())),
+        output
+      );
+    else
+      console.log(
+        'Native clipboard roundtrip unavailable on this host; verified the exact payload delivered to the real clipboard API.'
+      );
     await page.locator('#notes-editor').fill('進度更新時保留的草稿');
     await new Promise((resolve) => setTimeout(resolve, 1100));
     assert.equal(await page.locator('#notes-editor').inputValue(), '進度更新時保留的草稿');

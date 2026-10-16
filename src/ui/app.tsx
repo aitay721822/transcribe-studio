@@ -153,9 +153,11 @@ async function init() {
   }
   const data = await api('bootstrap');
   Object.assign(state, data);
+  document.documentElement.dataset.platform = data.platform;
   state.projectId = state.projects.find((p) => !p.archivedAt)?.id || null;
   applyTheme(state.settings.theme);
   host.capture = new AudioCapture(api, (ev) => {
+    if (ev.type === 'warning') toast(ev.message);
     if (ev.type === 'error') {
       toast(ev.message, true);
       invalidateUI();

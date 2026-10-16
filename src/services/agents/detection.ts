@@ -1,5 +1,6 @@
 import { agentAuth } from '../../domain/agents/auth';
 import type { LlmSettings } from '../../domain/models';
+import { credentialRedactor } from '../security/redaction';
 import { executableCandidates } from './executable';
 import { captureCli, type LoginState, probeLogin } from './login';
 
@@ -61,7 +62,7 @@ export async function detectAgents(llm: LlmSettings): Promise<DetectedAgent[]> {
         } catch (caughtError) {
           const error = caughtError instanceof Error ? caughtError : new Error(String(caughtError));
 
-          result.detail = error.message;
+          result.detail = credentialRedactor({ llm }).text(error.message);
         }
       }
       return result;

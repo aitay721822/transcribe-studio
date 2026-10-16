@@ -4,6 +4,7 @@ const path = require('node:path');
 const os = require('node:os');
 const assert = require('node:assert/strict');
 const { createMock } = require('../../tests/fixtures/claude-mock-api.cjs');
+const { packagedExecutable } = require('./platform/executable.cjs');
 
 async function main() {
   const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'studio-packaged-harness-'));
@@ -12,8 +13,7 @@ async function main() {
   const mock = createMock();
   await new Promise((r) => mock.server.listen(0, '127.0.0.1', r));
   const app = await _electron.launch({
-    executablePath:
-      process.env.STUDIO_PACKAGED || path.resolve('release/win-unpacked/Transcribe Studio.exe'),
+    executablePath: process.env.STUDIO_PACKAGED || packagedExecutable(),
     args: [],
     env,
   });
@@ -30,6 +30,7 @@ async function main() {
       const { ClaudeAdapter } = require(path.join(appDir, 'dist/ai/adapters/claude.cjs'));
       const { Store, DEFAULTS } = require(path.join(appDir, 'dist/persistence/store.cjs'));
       const { ClaudeProcess } = require(path.join(appDir, 'dist/transport/claude/process.cjs'));
+      const { bundledClaude } = require(path.join(appDir, 'dist/services/agents/bundled.cjs'));
 
       const adapter = new ClaudeAdapter(
         (file, args, cwd, env) =>
@@ -48,9 +49,7 @@ async function main() {
         claudeKey: 'local-test',
         claudeModel: 'test',
         claudeAuth: 'api',
-        claudePath: require
-          .resolve('@anthropic-ai/claude-agent-sdk-win32-x64/claude.exe')
-          .replace(`.asar${path.sep}`, `.asar.unpacked${path.sep}`),
+        claudePath: await bundledClaude(),
       };
       store.saveSettings(settings);
       const agent = new Agent(

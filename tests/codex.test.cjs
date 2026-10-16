@@ -6,6 +6,7 @@ const path = require('node:path');
 const http = require('node:http');
 const { Agent } = require('../dist/harness/coordinator.cjs');
 const { Store, DEFAULTS } = require('../dist/persistence/store.cjs');
+const { executableCandidates } = require('../dist/services/agents/executable.cjs');
 
 function sendResponse(res, output) {
   res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' });
@@ -94,8 +95,8 @@ for (const holdAt of [1, 2])
   test('real Codex app-server steer during inference ' +
     holdAt +
     ' uses the live turn and retains added input', { timeout: 30000 }, async (t) => {
-    const cli = path.join(process.env.LOCALAPPDATA || '', 'Programs/OpenAI/Codex/bin/codex.exe');
-    if (!fs.existsSync(cli)) {
+    const [cli] = await executableCandidates('codex');
+    if (!cli) {
       t.skip('Codex CLI is not installed');
       return;
     }
@@ -223,8 +224,8 @@ for (const holdAt of [1, 2])
 test('real optional Codex app-server runs dynamic meeting tools and resumes a persisted thread against local mock API', {
   timeout: 60000,
 }, async (t) => {
-  const cli = path.join(process.env.LOCALAPPDATA || '', 'Programs/OpenAI/Codex/bin/codex.exe');
-  if (!fs.existsSync(cli)) {
+  const [cli] = await executableCandidates('codex');
+  if (!cli) {
     t.skip('Codex CLI is not installed');
     return;
   }

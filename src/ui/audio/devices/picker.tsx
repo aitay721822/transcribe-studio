@@ -1,5 +1,6 @@
 import type { InputDevice } from '../../../domain/audio-devices';
 import { Select } from '../../primitives/select';
+import { AudioPermissions, useMediaPermissions } from './permissions';
 
 export function DevicePicker({
   id,
@@ -15,41 +16,49 @@ export function DevicePicker({
   onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void;
 }) {
   const route = devices.find((d) => d.id === '');
+  const permissions = useMediaPermissions();
   return (
-    <Select
-      id={id}
-      value={value}
-      disabled={disabled}
-      onChange={onChange}
-      popupWidth={440}
-      wrapOptions
-    >
-      <optgroup label="麥克風">
-        <option value="mic:">{route?.label || '系統預設麥克風（點偵測取得名稱）'}</option>
-        {devices
-          .filter((d) => d.role !== 'default' && d.role !== 'communications' && d.id)
-          .map((d) => (
-            <option key={d.id} value={`mic:${d.id}`}>
-              {d.label}
-            </option>
-          ))}
-      </optgroup>
-      {devices.some((d) => d.role === 'communications') && (
-        <optgroup label="通訊路由">
+    <>
+      <Select
+        id={id}
+        value={value}
+        disabled={disabled}
+        onChange={onChange}
+        popupWidth={440}
+        wrapOptions
+      >
+        <optgroup label="麥克風">
+          <option value="mic:">{route?.label || '系統預設麥克風（點偵測取得名稱）'}</option>
           {devices
-            .filter((d) => d.role === 'communications')
+            .filter((d) => d.role !== 'default' && d.role !== 'communications' && d.id)
             .map((d) => (
               <option key={d.id} value={`mic:${d.id}`}>
                 {d.label}
               </option>
             ))}
         </optgroup>
-      )}
-      <optgroup label="電腦播放音訊">
-        <option value="system">系統音訊（預設播放裝置）</option>
-        <option value="both">系統音訊＋選定麥克風</option>
-      </optgroup>
-    </Select>
+        {devices.some((d) => d.role === 'communications') && (
+          <optgroup label="通訊路由">
+            {devices
+              .filter((d) => d.role === 'communications')
+              .map((d) => (
+                <option key={d.id} value={`mic:${d.id}`}>
+                  {d.label}
+                </option>
+              ))}
+          </optgroup>
+        )}
+        <optgroup label="電腦播放音訊">
+          <option value="system" disabled={permissions?.systemAudio === false}>
+            系統音訊（預設播放裝置）
+          </option>
+          <option value="both" disabled={permissions?.systemAudio === false}>
+            系統音訊＋選定麥克風
+          </option>
+        </optgroup>
+      </Select>
+      <AudioPermissions permissions={permissions} />
+    </>
   );
 }
 

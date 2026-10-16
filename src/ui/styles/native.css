@@ -39,6 +39,12 @@ body,
   background: var(--topbar-tint);
   border-bottom-color: var(--navigation-edge);
 }
+:root[data-platform="darwin"] .app-titlebar {
+  padding-left: 86px;
+}
+:root[data-platform="darwin"] .window-controls {
+  display: none;
+}
 /* Preserve a readable surface if the platform requests reduced transparency. */
 @media (prefers-reduced-transparency: reduce) {
   .sidebar {

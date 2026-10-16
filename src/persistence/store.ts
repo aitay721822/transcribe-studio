@@ -317,12 +317,25 @@ export class Store {
   }
 
   settings(): Settings {
-    const r = this.db.prepare('SELECT data FROM settings WHERE id=1').get();
-    return r ? JSON.parse(String(r.data)) : structuredClone(DEFAULTS);
+    const data = this.settingsRecord();
+    return data ? JSON.parse(data) : structuredClone(DEFAULTS);
   }
 
   saveSettings(s: unknown) {
     this.db.prepare('INSERT OR REPLACE INTO settings VALUES (1,?)').run(JSON.stringify(s));
+  }
+
+  settingsRecord(): string | undefined {
+    const row = this.db.prepare('SELECT data FROM settings WHERE id=1').get();
+    return row ? String(row.data) : undefined;
+  }
+
+  saveSettingsRecord(ciphertext: string, purgeLegacy = false) {
+    if (!ciphertext.startsWith('protected-settings:v2:')) throw new Error('禁止寫入明文憑證設定');
+    this.db.exec('PRAGMA secure_delete=ON');
+    this.db.prepare('INSERT OR REPLACE INTO settings VALUES (1,?)').run(ciphertext);
+    if (purgeLegacy)
+      this.db.exec('PRAGMA wal_checkpoint(TRUNCATE); VACUUM; PRAGMA wal_checkpoint(TRUNCATE);');
   }
 
   revisionList(id: string) {

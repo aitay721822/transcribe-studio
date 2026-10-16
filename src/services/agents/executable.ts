@@ -1,5 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { record } from '../../domain/value';
+import { posixCommand, posixDirectories } from './posix';
 
 export interface LaunchCommand {
   executable: string;
@@ -27,6 +29,7 @@ async function javascriptCommand(
 /** Resolve standard npm shims to their package entry; never evaluate shell text. */
 export async function launchCommand(file: string): Promise<LaunchCommand> {
   if (!/\.(cmd|bat|ps1)$/i.test(file)) {
+    if (process.platform !== 'win32') return posixCommand(file);
     return /\.(m?js|cjs)$/i.test(file) ? javascriptCommand(file) : { executable: file, args: [] };
   }
   const packageName = path.basename(file).replace(/\.(cmd|bat|ps1)$/i, '');
@@ -36,8 +39,8 @@ export async function launchCommand(file: string): Promise<LaunchCommand> {
   };
   if (!packages[packageName]) throw new Error('不支援的 CLI 啟動檔');
   const directory = path.join(path.dirname(file), 'node_modules', packages[packageName]);
-  const pkg = JSON.parse(await fs.readFile(path.join(directory, 'package.json'), 'utf8'));
-  const entry = typeof pkg.bin === 'string' ? pkg.bin : pkg.bin?.[packageName];
+  const pkg = record(JSON.parse(await fs.readFile(path.join(directory, 'package.json'), 'utf8')));
+  const entry = typeof pkg.bin === 'string' ? pkg.bin : record(pkg.bin)[packageName];
   if (typeof entry !== 'string') throw new Error('CLI 套件沒有可執行入口');
   const target = path.resolve(directory, entry);
   if (!target.startsWith(`${directory}${path.sep}`) || !(await fs.stat(target)).isFile())
@@ -71,14 +74,7 @@ export async function executableCandidates(
     if (env.APPDATA) dirs.push(path.join(env.APPDATA, 'npm'));
     if (env.LOCALAPPDATA) dirs.push(path.join(env.LOCALAPPDATA, 'Programs/OpenAI/Codex/bin'));
     if (home) dirs.push(path.join(home, '.local/bin'), path.join(home, '.cargo/bin'));
-  } else if (home) {
-    dirs.push(
-      path.join(home, '.local/bin'),
-      path.join(home, '.npm-global/bin'),
-      '/usr/local/bin',
-      '/opt/homebrew/bin'
-    );
-  }
+  } else dirs.push(...(await posixDirectories(env)));
   const override = env[`STUDIO_${id.toUpperCase()}_PATH`];
   if (platform === 'darwin' && id === 'codex')
     dirs.push(
@@ -93,7 +89,10 @@ export async function executableCandidates(
   for (const file of [...new Set(files)]) {
     try {
       const info = await fs.stat(file);
-      if (info.isFile()) found.push(path.resolve(file));
+      if (!info.isFile()) continue;
+      if (platform !== 'win32' && !/\.(m?js|cjs)$/i.test(file))
+        await fs.access(file, fs.constants.X_OK);
+      found.push(path.resolve(file));
     } catch {}
   }
   return found;

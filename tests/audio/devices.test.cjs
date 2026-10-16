@@ -34,7 +34,7 @@ test('device catalog preserves model names, groups OS routes, distinguishes iden
   assert.equal(inputDeviceCatalog([raw('anonymous', '')])[1].named, false);
 });
 
-async function sources(mediaDevices) {
+async function sources(mediaDevices, invoke = async () => {}) {
   const { build } = require('esbuild');
 
   const result = await build({
@@ -49,6 +49,7 @@ async function sources(mediaDevices) {
     module,
     exports: module.exports,
     navigator: { mediaDevices },
+    window: { studio: { invoke } },
   });
   return module.exports;
 }
@@ -95,4 +96,61 @@ test('device discovery reads model labels while permission stream is still live 
   };
   await assert.rejects(listInputDevices(true), /permission denied/);
   assert.equal(stopped, 2);
+});
+
+test('system capture rejects missing or ended audio and releases every acquired track', async () => {
+  for (const audioState of ['missing', 'ended']) {
+    const stopped = [];
+    const video = { stop: () => stopped.push('video') };
+    const audio = {
+      readyState: 'ended',
+
+      stop: () => stopped.push('audio'),
+    };
+    const tracks = audioState === 'missing' ? [video] : [video, audio];
+    const { openAudioSources } = await sources({
+      getDisplayMedia: async () => ({
+        getTracks: () => tracks,
+
+        getAudioTracks: () => tracks.filter((track) => track === audio),
+      }),
+    });
+    await assert.rejects(openAudioSources('system'), /音訊/);
+    assert.equal(stopped.length, tracks.length);
+  }
+});
+
+test('permission preflight blocks capture; microphone denial releases an existing system stream', async () => {
+  let opened = 0;
+  let stopped = 0;
+  const track = {
+    readyState: 'live',
+
+    stop: () => stopped++,
+  };
+  const devices = {
+    getDisplayMedia: async () => {
+      opened++;
+      return {
+        getAudioTracks: () => [track],
+
+        getTracks: () => [track],
+      };
+    },
+
+    getUserMedia: async () => {
+      throw new Error('microphone denied');
+    },
+  };
+  const denied = await sources(devices, async (channel, source) => {
+    assert.equal(channel, 'media:prepare');
+    assert.equal(source, 'both');
+    throw new Error('OS permission denied');
+  });
+  await assert.rejects(denied.openAudioSources('both'), /OS permission denied/);
+  assert.equal(opened, 0);
+  const allowed = await sources(devices);
+  await assert.rejects(allowed.openAudioSources('both'), /microphone denied/);
+  assert.equal(opened, 1);
+  assert.equal(stopped, 1);
 });

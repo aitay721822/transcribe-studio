@@ -21,7 +21,7 @@ export async function findCodexExecutable(configured = ''): Promise<string> {
       if ((await fs.stat(file)).isFile()) return path.resolve(file);
     } catch {}
   }
-  throw new Error('找不到 Codex CLI，請指定 codex.exe 路徑或安裝 Codex CLI。');
+  throw new Error('找不到 Codex CLI，請指定 CLI 執行檔路徑或安裝 Codex CLI。');
 }
 
 /** Optional app-server adapter. There is no Codex dependency in the coordinator's contract. */

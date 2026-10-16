@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { Meeting, Project } from '../../domain/models';
+import { shortcutLabel } from '../application/platform/shortcuts';
 import { icon } from '../components/icons';
 import { mountOverlay } from '../layout/overlays';
 import { Input } from '../primitives/input';
@@ -245,7 +246,7 @@ function SearchPalette({ options, close }: { options: PaletteOptions; close: () 
           >
             {icon(action.glyph)}
             <span className="palette-result-title">{action.label}</span>
-            <kbd>{action.key}</kbd>
+            <kbd>{shortcutLabel(action.letter)}</kbd>
           </button>
         ))}
       </div>

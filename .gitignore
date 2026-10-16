@@ -5,3 +5,11 @@ test-results/
 output/
 *.log
 .env
+.env.*
+!.env.example
+*.sqlite
+*.sqlite-*
+*.pem
+*.key
+*.p12
+*.pfx

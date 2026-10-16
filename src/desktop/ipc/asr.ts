@@ -1,4 +1,5 @@
 import { realtimeRate } from '../../domain/asr/realtime';
+import { credentialRedactor } from '../../services/security/redaction';
 import { createAsrSession, normalize } from '../../transport/asr';
 import { signalOffer } from '../../transport/webrtc';
 import type { DesktopContext } from '../context';
@@ -9,11 +10,13 @@ export function registerAsr(ctx: DesktopContext) {
     meeting(id);
     if (asr.has(id)) throw new Error('ASR 已連線');
     const config = settingsInternal().asr;
+    const redact = credentialRedactor({ asr: config });
     if (config.provider === 'webrtc')
       return { provider: 'webrtc', channel: config.channel, sampleRate: config.sampleRate };
     config.sampleRate = realtimeRate(config);
     const record = [...recordings.values()].find((r) => r.meetingId === id);
     const stream = createAsrSession(config, (ev) => {
+      if (ev.message) ev.message = redact.text(ev.message);
       if (ev.type === 'segment') {
         ev.segment = {
           ...ev.segment,
@@ -36,7 +39,7 @@ export function registerAsr(ctx: DesktopContext) {
 
       asr.delete(id);
       await stream.close();
-      throw e;
+      throw new Error(redact.text(e.message));
     }
   });
   handle('asr:audio', (id, bytes) => {

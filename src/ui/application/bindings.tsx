@@ -5,6 +5,7 @@ import { invalidateUI } from '../layout/roots';
 import { FilePreview } from '../projects/files/preview';
 import { closeProjectMenu, openProjectMenu } from '../projects/menu';
 import type { Controllers } from './integration/contracts';
+import { actionShortcut } from './platform/shortcuts';
 import { $, type UiRuntime } from './runtime';
 
 /** React event delegation keeps the feature controllers independent of presentation. */
@@ -273,11 +274,7 @@ export function bindShortcuts(
         state.view === 'workspace' &&
         !$<HTMLDialogElement>('#modal').open &&
         !$('#search-palette') &&
-        e.ctrlKey &&
-        e.altKey &&
-        !e.shiftKey &&
-        !e.isComposing &&
-        e.key.toLowerCase() === 'm'
+        actionShortcut(e, 'm')
       ) {
         e.preventDefault();
         if (!e.repeat) await actions['add-annotation']();
@@ -287,13 +284,11 @@ export function bindShortcuts(
         state.view === 'project' &&
         !$<HTMLDialogElement>('#modal').open &&
         !$('#search-palette') &&
-        e.ctrlKey &&
-        e.altKey &&
-        !e.isComposing &&
-        ['m', 'i'].includes(e.key.toLowerCase())
+        !e.repeat &&
+        (actionShortcut(e, 'm') || actionShortcut(e, 'i'))
       ) {
         e.preventDefault();
-        await actions[e.key.toLowerCase() === 'm' ? 'project-live' : 'project-import']();
+        await actions[actionShortcut(e, 'm') ? 'project-live' : 'project-import']();
         return;
       }
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {

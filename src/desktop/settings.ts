@@ -1,50 +1,29 @@
 import type { BrowserWindow } from 'electron';
-import { nativeTheme, safeStorage } from 'electron';
+import { nativeTheme } from 'electron';
 import { agentAuth } from '../domain/agents/auth';
 import { compressionSettings } from '../domain/agents/compression';
 import { executionLimits } from '../domain/agents/limits';
 import type { Meeting, Settings } from '../domain/models';
 import { transcriptionEndpoint } from '../domain/transcription';
-import type { Store } from '../persistence/store';
 import { DEFAULTS } from '../persistence/store';
 import { detectAgents } from '../services/agents/detection';
+import type { SettingsVault } from '../services/security/settings';
 import type { DesktopContext } from './context';
 
-export function createSettings(store: Store, getWindow: () => BrowserWindow) {
+export function createSettings(vault: SettingsVault, getWindow: () => BrowserWindow) {
   const winProxy = () => getWindow();
 
   const MASK = '••••••••';
 
-  function encrypt(value: string) {
-    if (!value) return '';
-    if (!safeStorage.isEncryptionAvailable())
-      throw new Error('作業系統憑證加密不可用，無法儲存秘密');
-    return `encrypted:${safeStorage.encryptString(value).toString('base64')}`;
-  }
-
-  function decrypt(value: string) {
-    if (!value?.startsWith('encrypted:')) return value || '';
-    return safeStorage.decryptString(Buffer.from(value.slice(10), 'base64'));
-  }
-
   function settingsInternal() {
-    const s = store.settings();
+    const s = vault.read();
     s.asr = { ...DEFAULTS.asr, ...s.asr, fileApiKey: s.asr.fileApiKey ?? s.asr.apiKey };
-    s.llm.apiKey = decrypt(s.llm.apiKey);
-    s.asr.apiKey = decrypt(s.asr.apiKey);
-    s.asr.fileApiKey = decrypt(s.asr.fileApiKey);
-    s.llm = { ...DEFAULTS.llm, ...s.llm, claudeKey: decrypt(s.llm.claudeKey || '') };
+    s.llm = { ...DEFAULTS.llm, ...s.llm };
     if (s.llm.backend === 'responses') s.llm.backend = 'openai';
     s.llm.codexAuth = agentAuth(s.llm, 'codex');
     s.llm.claudeAuth = agentAuth(s.llm, 'claude');
-    if (typeof s.asr.headers === 'string') s.asr.headers = JSON.parse(decrypt(s.asr.headers));
-    if (typeof s.asr.fileHeaders === 'string')
-      s.asr.fileHeaders = JSON.parse(decrypt(s.asr.fileHeaders));
     s.asr.fileHeaders ||= {};
-    if (typeof s.asr.iceServers === 'string')
-      s.asr.iceServers = JSON.parse(decrypt(s.asr.iceServers));
     s.asr.iceServers ||= [];
-    if (typeof s.mcp === 'string') s.mcp = JSON.parse(decrypt(s.mcp));
     return s;
   }
 
@@ -85,7 +64,7 @@ export function createSettings(store: Store, getWindow: () => BrowserWindow) {
     };
   }
 
-  function saveSettings(s: Partial<Settings>) {
+  async function persistSettings(s: Partial<Settings>) {
     const prev = settingsInternal();
     const next = {
       theme: ['light', 'dark', 'system', 'forest'].includes(s.theme) ? s.theme : 'system',
@@ -95,12 +74,9 @@ export function createSettings(store: Store, getWindow: () => BrowserWindow) {
     };
     for (const k of ['llm', 'asr'] as const) {
       if (next[k].apiKey === MASK) next[k].apiKey = prev[k].apiKey;
-      next[k].apiKey = encrypt(next[k].apiKey);
     }
     if (next.asr.fileApiKey === MASK) next.asr.fileApiKey = prev.asr.fileApiKey;
-    const fileApiKey = next.asr.fileApiKey;
     if (next.llm.claudeKey === MASK) next.llm.claudeKey = prev.llm.claudeKey;
-    next.llm.claudeKey = encrypt(next.llm.claudeKey);
     if (!['openai', 'codex', 'claude', 'responses'].includes(next.llm.backend))
       throw new Error('無效的 harness');
     for (const field of ['codexAuth', 'claudeAuth'] as const)
@@ -137,19 +113,18 @@ export function createSettings(store: Store, getWindow: () => BrowserWindow) {
         throw new Error('MCP env 的值必須為字串');
     }
     if (!Array.isArray(next.asr.iceServers)) throw new Error('WebRTC ICE servers 需要 JSON 陣列');
-    store.saveSettings({
-      ...next,
-      asr: {
-        ...next.asr,
-        headers: encrypt(JSON.stringify(next.asr.headers || {})),
-        fileHeaders: encrypt(JSON.stringify(next.asr.fileHeaders || {})),
-        fileApiKey: encrypt(fileApiKey),
-        iceServers: encrypt(JSON.stringify(next.asr.iceServers)),
-      },
-      mcp: encrypt(JSON.stringify(next.mcp)),
-    });
+    await vault.save(next);
     applyWindowTheme(next.theme);
     return settingsPublic();
+  }
+
+  let pendingSave: Promise<unknown> = Promise.resolve();
+
+  function saveSettings(settings: Partial<Settings>) {
+    const draft = structuredClone(settings);
+    const operation = pendingSave.then(() => persistSettings(draft));
+    pendingSave = operation.catch(() => {});
+    return operation;
   }
 
   return { settingsInternal, settingsPublic, saveSettings, applyWindowTheme, sanitizeMeeting };

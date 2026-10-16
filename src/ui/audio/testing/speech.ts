@@ -1,6 +1,7 @@
 import { cleanDeviceName } from '../../../domain/audio-devices';
 import type { ConnectionEvent, Invoke } from '../../../domain/ipc';
 import type { Settings } from '../../../domain/models';
+import { AudioHealth } from '../lifecycle/health';
 import { openAudioSources } from '../sources';
 import { connectTestRtc } from './rtc';
 
@@ -60,6 +61,10 @@ export class SpeechConnectionTest {
       silent.gain.value = 0;
       mix.connect(this.worklet).connect(silent).connect(this.context.destination);
       this.running = true;
+      const health =
+        source === 'mic'
+          ? undefined
+          : new AudioHealth((message) => this.event({ type: 'status', message }));
       let voice = false,
         lastVoice = 0,
         lastCommit = Date.now();
@@ -70,6 +75,10 @@ export class SpeechConnectionTest {
         }
         if (!this.running) return;
         if ('level' in data) {
+          health?.sample(
+            data.level,
+            this.streams[0]?.getAudioTracks().some((track) => track.muted)
+          );
           this.event({ type: 'level', level: data.level });
           if (data.level > 0.012) {
             voice = true;

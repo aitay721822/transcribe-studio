@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { currentPlatform, shortcutLabel } from '../../platform/shortcuts';
 import { selectedRect, visibleRect } from './geometry';
 
 export function SelectionToolbar({ meetingId, tab }: { meetingId: string; tab: string }) {
@@ -93,9 +94,9 @@ export function SelectionToolbar({ meetingId, tab }: { meetingId: string; tab: s
             top: Math.max(8, position.y - 48),
           }}
           onMouseDown={(e) => e.preventDefault()}
-          aria-keyshortcuts="Control+Alt+M"
+          aria-keyshortcuts={currentPlatform() === 'darwin' ? 'Meta+Shift+M' : 'Control+Alt+M'}
         >
-          標記選取文字 <kbd>Ctrl Alt M</kbd>
+          標記選取文字 <kbd>{shortcutLabel('M', true)}</kbd>
         </button>,
         document.body
       )

@@ -1,4 +1,5 @@
 import type { Settings } from '../../domain/models';
+import { credentialRedactor } from '../security/redaction';
 
 /** Draft tests reuse masked stored secrets without saving or revealing them. */
 export function connectionSettings(draft: Partial<Settings>, saved: Settings): Settings {
@@ -35,17 +36,7 @@ export function connectionSettings(draft: Partial<Settings>, saved: Settings): S
 }
 
 export function diagnosticError(error: unknown, settings: Settings): string {
-  let message = String((error as Error)?.message || error).slice(0, 1500);
-  const secrets = [
-    settings.llm.apiKey,
-    settings.llm.claudeKey,
-    settings.asr.apiKey,
-    settings.asr.fileApiKey,
-    ...Object.values(settings.asr.headers || {}),
-    ...Object.values(settings.asr.fileHeaders || {}),
-  ];
-  for (const secret of secrets)
-    if (typeof secret === 'string' && secret.length > 3)
-      message = message.replaceAll(secret, '••••••••');
-  return message;
+  return credentialRedactor(settings)
+    .text(String((error as Error)?.message || error))
+    .slice(0, 1500);
 }
