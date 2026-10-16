@@ -90,11 +90,18 @@
 }
 .theme-options {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 14px;
 }
 .theme-option {
-  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 8px;
+  min-width: 0;
+  white-space: normal;
+  padding: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
   text-align: left;
@@ -102,37 +109,56 @@
 }
 .theme-option.active {
   border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent);
 }
 .theme-swatch {
-  height: 65px;
+  width: 100%;
+  height: 88px;
+  flex: none;
   border-radius: 5px;
-  display: flex;
-  margin-bottom: 8px;
-  background: #f4f5f1;
-  border: 1px solid #bec9be44;
+  display: grid;
+  grid-template-columns: 25% minmax(0, 1fr);
+  overflow: hidden;
+  background: var(--bg);
+  border: 1px solid var(--line);
 }
-.theme-swatch span {
-  width: 28%;
-  background: #e2e8df;
-  border-right: 1px solid #bec9be44;
+.theme-preview-sidebar {
+  background: var(--accent-soft);
+  border-right: 1px solid var(--line);
 }
-.theme-swatch.dark {
-  background: #202724;
+.theme-preview-document {
+  align-self: center;
+  display: grid;
+  gap: 8px;
+  padding: 16px;
 }
-.theme-swatch.dark span {
-  background: #303c33;
+.theme-preview-document > span {
+  height: 5px;
+  border-radius: 3px;
+  background: var(--line);
 }
-.theme-swatch.forest {
-  background: #20362a;
+.theme-preview-document > span:first-child {
+  width: 55%;
+  background: var(--accent);
 }
-.theme-swatch.forest span {
-  background: #37503a;
+.theme-preview-document > span:last-child {
+  width: 75%;
 }
 .theme-swatch.system {
   background: linear-gradient(120deg, #f4f5f1 50%, #202724 50%);
 }
-.theme-swatch.system span {
-  background: #dbe5d5;
+.theme-option-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--ink);
+}
+.theme-option-description {
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.5;
 }
 .settings-actions {
   flex: none;

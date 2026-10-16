@@ -4,6 +4,37 @@ const fs = require('node:fs/promises'),
   os = require('node:os'),
   assert = require('node:assert/strict');
 
+async function themeCards(page, width) {
+  assert.equal(await page.locator('[data-theme-option]').count(), 9);
+  const cards = await page.locator('.theme-option').evaluateAll((elements) =>
+    elements.map((element) => {
+      const card = element.getBoundingClientRect();
+      const swatch = element.querySelector('.theme-swatch').getBoundingClientRect();
+      const label = element.querySelector('.theme-option-label').getBoundingClientRect();
+      return {
+        id: element.dataset.themeOption,
+        card: { left: card.left, right: card.right },
+        swatch: {
+          left: swatch.left,
+          right: swatch.right,
+          width: swatch.width,
+          bottom: swatch.bottom,
+        },
+        labelTop: label.top,
+        overflow: element.scrollWidth > element.clientWidth + 1,
+      };
+    })
+  );
+  for (const card of cards) {
+    assert(card.swatch.width >= 100, `${width} ${card.id}: preview must not collapse`);
+    assert(card.swatch.bottom <= card.labelTop, `${width} ${card.id}: label must be below preview`);
+    assert(card.swatch.left >= card.card.left && card.swatch.right <= card.card.right);
+    assert.equal(card.overflow, false, `${width} ${card.id}: card overflow`);
+  }
+  await fs.mkdir('output/playwright', { recursive: true });
+  await page.screenshot({ path: `output/playwright/appearance-${width}.png` });
+}
+
 async function main() {
   const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'studio-settings-layout-'));
   const env = { ...process.env, STUDIO_TEST_DATA: profile };
@@ -77,6 +108,7 @@ async function main() {
               .locator('pre.code-field')
               .evaluateAll((pres) => pres.every((pre) => pre.scrollWidth <= pre.clientWidth + 1))
           );
+        if (tab === 'appearance') await themeCards(page, width);
       }
       await page.locator('[data-settings-tab="mcp"]').click();
       await fs.mkdir('output/playwright', { recursive: true });
@@ -86,6 +118,32 @@ async function main() {
       await page.screenshot({ path: `output/playwright/settings-layout-${width}.png` });
       if (width === 1440) {
         await page.locator('[data-settings-tab="appearance"]').click();
+        for (const theme of [
+          'light',
+          'forest',
+          'ocean',
+          'slate',
+          'sand',
+          'rose',
+          'lavender',
+          'system',
+        ]) {
+          await page.locator(`[data-theme-option="${theme}"]`).click();
+          assert.equal(
+            await page.locator(`[data-theme-option="${theme}"]`).getAttribute('aria-pressed'),
+            'true'
+          );
+          await page.locator('[data-action="save-settings"]').click();
+          await page.waitForFunction(
+            async (theme) => (await window.studio.invoke('bootstrap')).settings.theme === theme,
+            theme
+          );
+          const scheme = await page.evaluate(
+            () => getComputedStyle(document.documentElement).colorScheme
+          );
+          const nativeScheme = await app.evaluate(({ nativeTheme }) => nativeTheme.themeSource);
+          if (theme !== 'system') assert.equal(nativeScheme, scheme);
+        }
         await page.locator('[data-theme-option="dark"]').click();
         await page.locator('[data-action="save-settings"]').click();
         await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark');
@@ -96,6 +154,14 @@ async function main() {
         await page.screenshot({ path: 'output/playwright/settings-layout-dark.png' });
       }
     }
+    await page.locator('[data-settings-tab="appearance"]').click();
+    await page.locator('[data-theme-option="ocean"]').click();
+    await page.locator('[data-action="save-settings"]').click();
+    await page.waitForFunction(
+      async () => (await window.studio.invoke('bootstrap')).settings.theme === 'ocean'
+    );
+    await page.reload();
+    await page.waitForFunction(() => document.documentElement.dataset.theme === 'ocean');
     assert.deepEqual(errors, []);
     console.log(
       'Settings layout passed: persistent left categories, full-width right content, one matching-color footer, wrapped MCP JSON and desktop/compact layouts.'

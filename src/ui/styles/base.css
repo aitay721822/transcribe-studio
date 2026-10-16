@@ -1,5 +1,6 @@
 /* Ordered foundation and feature styles preserve the existing cascade. */
 @import "./foundation/theme.css";
+@import "./foundation/palettes.css";
 @import "./foundation/reset.css";
 @import "./surfaces/chrome.css";
 @import "./foundation/controls.css";

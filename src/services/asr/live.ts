@@ -4,6 +4,7 @@ import type { AsrTask } from '../../domain/asr/tasks';
 import { type TranscriptionConfig, validateTranscription } from '../../domain/transcription';
 import { completeCovered } from '../../persistence/asr/coverage';
 import type { AsrRepository } from '../../persistence/asr/repository';
+import { SpeechBoundary } from '../../transport/transcription/boundary';
 import { pcmWav } from '../../transport/transcription/wav';
 import type { AudioSpool } from './spool';
 
@@ -35,6 +36,7 @@ export class DurableLiveSession implements SpeechSession {
   private closing?: Promise<void>;
   private lastWarning = '';
   private deferred: boolean;
+  private boundary?: SpeechBoundary;
 
   constructor(private options: LiveOptions) {
     this.task = options.task;
@@ -48,6 +50,7 @@ export class DurableLiveSession implements SpeechSession {
     this.rate = Number(this.options.config.sampleRate || 24000);
     if (![16000, 24000, 48000].includes(this.rate)) throw new Error('HTTP 音訊取樣率無效');
     this.limit = Math.round(this.rate * seconds) * 2;
+    if (!this.options.captureOnly) this.boundary = new SpeechBoundary(this.rate);
     this.ready = true;
   }
 
@@ -138,6 +141,7 @@ export class DurableLiveSession implements SpeechSession {
     this.consumed += this.length;
     this.parts = [];
     this.length = 0;
+    this.boundary?.reset();
   }
 
   audio(input: ArrayBuffer): boolean {
@@ -146,11 +150,12 @@ export class DurableLiveSession implements SpeechSession {
     if (bytes.length > 256000 || bytes.length % 2) throw new Error('PCM16 音訊片段無效');
     let offset = 0;
     while (offset < bytes.length) {
-      const size = Math.min(this.limit - this.length, bytes.length - offset);
+      const available = Math.min(this.limit - this.length, bytes.length - offset);
+      const size = this.boundary?.consume(bytes.subarray(offset, offset + available)) ?? available;
       this.parts.push(Buffer.from(bytes.subarray(offset, offset + size)));
       this.length += size;
       offset += size;
-      if (this.length === this.limit) this.commit();
+      if (this.length === this.limit || this.boundary?.reached()) this.commit();
     }
     return true;
   }
@@ -163,6 +168,7 @@ export class DurableLiveSession implements SpeechSession {
     const end = this.task.recordingOffset + this.consumed / (this.rate * 2);
     this.parts = [];
     this.length = 0;
+    this.boundary?.reset();
     let power = 0;
     for (let index = 0; index < bytes.length; index += 2)
       power += (bytes.readInt16LE(index) / 32768) ** 2;

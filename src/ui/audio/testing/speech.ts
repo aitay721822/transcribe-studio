@@ -135,7 +135,7 @@ export class SpeechConnectionTest {
         connected: config.provider !== 'transcriptions',
         message:
           config.provider === 'transcriptions'
-            ? `裝置已就緒，請說話；每 ${config.chunkSeconds} 秒上傳一段，收到文字後確認辨識連線。`
+            ? `裝置已就緒，請說話後稍作停頓；安靜約 0.9 秒時分段，最長 ${config.chunkSeconds || 5} 秒送出，收到文字後確認辨識連線。`
             : '已連線，請說話，辨識文字會顯示在下方。',
       });
     } catch (caughtE) {

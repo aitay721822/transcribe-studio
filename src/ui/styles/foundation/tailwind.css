@@ -3,7 +3,14 @@
 @source "../../";
 
 /* Keep Studio's reset and native glass surfaces; do not import Tailwind Preflight. */
-@custom-variant dark (&:where([data-theme="dark"] *, [data-theme="forest"] *));
+@custom-variant dark (
+  &:where(
+    [data-theme="dark"] *,
+    [data-theme="forest"] *,
+    [data-theme="ocean"] *,
+    [data-theme="slate"] *
+  )
+);
 @theme {
   --text-xs: 1rem;
   --text-xs--line-height: 1.5;

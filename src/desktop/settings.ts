@@ -4,6 +4,7 @@ import { agentAuth } from '../domain/agents/auth';
 import { compressionSettings } from '../domain/agents/compression';
 import { executionLimits } from '../domain/agents/limits';
 import type { Meeting, Settings } from '../domain/models';
+import { themeScheme, validTheme } from '../domain/themes';
 import { transcriptionEndpoint } from '../domain/transcription';
 import { DEFAULTS } from '../persistence/store';
 import { detectAgents } from '../services/agents/detection';
@@ -37,17 +38,7 @@ export function createSettings(vault: SettingsVault, getWindow: () => BrowserWin
   }
 
   function applyWindowTheme(theme: string) {
-    const windowTheme = () => {
-      if (theme === 'forest' || theme === 'dark') {
-        return 'dark';
-      }
-      if (theme === 'light') {
-        return 'light';
-      }
-      return 'system';
-    };
-
-    nativeTheme.themeSource = windowTheme();
+    nativeTheme.themeSource = themeScheme(theme);
     const win = winProxy();
     if (win && process.platform === 'win32') win.setBackgroundMaterial('acrylic');
   }
@@ -67,7 +58,7 @@ export function createSettings(vault: SettingsVault, getWindow: () => BrowserWin
   async function persistSettings(s: Partial<Settings>) {
     const prev = settingsInternal();
     const next = {
-      theme: ['light', 'dark', 'system', 'forest'].includes(s.theme) ? s.theme : 'system',
+      theme: validTheme(s.theme),
       llm: { ...DEFAULTS.llm, ...s.llm },
       asr: { ...DEFAULTS.asr, ...s.asr, mapping: { ...DEFAULTS.asr.mapping, ...s.asr?.mapping } },
       mcp: s.mcp || [],

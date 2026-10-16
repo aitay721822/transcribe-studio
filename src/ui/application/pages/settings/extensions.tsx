@@ -1,4 +1,6 @@
+import { THEMES } from '../../../../domain/themes';
 import { icon } from '../../../components/icons';
+import { Button } from '../../../primitives/button';
 import type { PageContext } from '../contracts';
 import { field } from './field';
 
@@ -77,22 +79,29 @@ export function appearanceSettings(context: PageContext) {
     <section className="panel">
       <h2>外觀主題</h2>
       <div className="theme-options">
-        {[
-          ['system', '跟隨系統'],
-          ['light', '晨光'],
-          ['dark', '夜間'],
-          ['forest', '森林'],
-        ].map(([t, label], __index) => (
-          <button
-            className={`theme-option ${s.theme === t ? 'active' : ''}`}
-            data-theme-option={t}
-            key={t}
+        {THEMES.map(({ id, label, description }) => (
+          <Button
+            variant="ghost"
+            size="bare"
+            className={`theme-option ${s.theme === id ? 'active' : ''}`}
+            data-theme-option={id}
+            aria-pressed={s.theme === id}
+            key={id}
           >
-            <div className={`theme-swatch ${t}`}>
-              <span />
-            </div>
-            {label}
-          </button>
+            <span className={`theme-swatch ${id}`} data-theme={id} aria-hidden="true">
+              <span className="theme-preview-sidebar" />
+              <span className="theme-preview-document">
+                <span />
+                <span />
+                <span />
+              </span>
+            </span>
+            <span className="theme-option-label">
+              {label}
+              {s.theme === id && icon('check')}
+            </span>
+            <span className="theme-option-description">{description}</span>
+          </Button>
         ))}
       </div>
       <div className="footer-note">

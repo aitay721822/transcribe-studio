@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { TranscriptSegment } from '../../domain/models';
 import { type TranscriptionConfig, validateTranscription } from '../../domain/transcription';
+import { SpeechBoundary } from './boundary';
 import { transcribeAudio } from './request';
 import { pcmWav } from './wav';
 
@@ -26,6 +27,7 @@ export class HttpTranscriptionSession {
   private cancelled = false;
   private limit = 0;
   private rate = 0;
+  private boundary?: SpeechBoundary;
 
   constructor(
     private config: TranscriptionConfig,
@@ -37,6 +39,7 @@ export class HttpTranscriptionSession {
     this.rate = Number(this.config.sampleRate || 24000);
     if (![16000, 24000, 48000].includes(this.rate)) throw new Error('HTTP 音訊取樣率無效');
     this.limit = Math.round(this.rate * seconds) * 2;
+    this.boundary = new SpeechBoundary(this.rate);
     this.ready = true;
   }
 
@@ -46,11 +49,12 @@ export class HttpTranscriptionSession {
     if (buffer.length > 256000 || buffer.length % 2) throw new Error('PCM16 音訊片段無效');
     let offset = 0;
     while (offset < buffer.length && !this.failed) {
-      const size = Math.min(this.limit - this.length, buffer.length - offset);
+      const available = Math.min(this.limit - this.length, buffer.length - offset);
+      const size = this.boundary?.consume(buffer.subarray(offset, offset + available)) ?? available;
       this.parts.push(Buffer.from(buffer.subarray(offset, offset + size)));
       this.length += size;
       offset += size;
-      if (this.length === this.limit) this.commit();
+      if (this.length === this.limit || this.boundary?.reached()) this.commit();
     }
     return !this.failed;
   }
@@ -62,6 +66,7 @@ export class HttpTranscriptionSession {
     this.consumed += this.length;
     this.parts = [];
     this.length = 0;
+    this.boundary?.reset();
     let power = 0;
     for (let i = 0; i < bytes.length; i += 2) power += (bytes.readInt16LE(i) / 32768) ** 2;
     if (Math.sqrt(power / (bytes.length / 2)) < 0.006) return;

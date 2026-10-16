@@ -91,6 +91,43 @@ async function fixture(t) {
   };
 }
 
+test('durable HTTP capture persists pause boundaries, hard limits and the final tail with exact offsets', async (t) => {
+  const f = await fixture(t);
+  f.config.chunkSeconds = 5;
+  const live = f.service.createLive({
+    meetingId: f.meeting.id,
+    recordingId: 'dynamic-recording',
+    offset: 12,
+    config: f.config,
+
+    emit: () => {},
+  });
+  await live.connect();
+  const voice = pcm(1);
+  const pause = pcm(0.9, 0);
+  const first = Buffer.concat([voice, pause]);
+  assert(live.audio(first));
+  // A single packet spans the hard limit and a partial final segment.
+  const rest = pcm(6);
+  assert(live.audio(rest));
+  assert.equal(live.position(), 19.9);
+  await live.close();
+  const job = f.service.repository.list().items[0];
+  const chunks = f.service.repository.chunks(job.id);
+  assert.deepEqual(
+    chunks.map((chunk) => [chunk.start, chunk.end]),
+    [
+      [12, 13.9],
+      [13.9, 18.9],
+      [18.9, 19.9],
+    ]
+  );
+  const audio = await Promise.all(
+    chunks.map(async (chunk) => (await fs.readFile(chunk.path)).subarray(44))
+  );
+  assert.deepEqual(Buffer.concat(audio), Buffer.concat([first, rest]));
+});
+
 test('live HTTP recording keeps independently decodable queued audio while offline and recovers after service starts', async (t) => {
   const f = await fixture(t);
   await new Promise((resolve) => f.server.close(resolve));

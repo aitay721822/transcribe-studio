@@ -117,7 +117,8 @@ export function SpeechServices({
       >
         <h2>離線辨識</h2>
         <p className="help">
-          透過 /audio/transcriptions 上傳音檔。用於收音時，會累積一段音訊再上傳，逐段回傳文字。
+          透過 /audio/transcriptions 上傳音檔。收音時優先在說話後停頓約 0.9
+          秒時分段，持續說話則在最長秒數送出，逐段回傳文字。
         </p>
         <div className="form-grid">
           {field(
@@ -136,7 +137,7 @@ export function SpeechServices({
           )}
           {field('音檔辨識模型', 'file-model', c.fileModel || '')}
           {field('語言代碼', 'language', c.language || '', 'text', '例如 zh、en；留白由模型判斷。')}
-          {select('HTTP 收音分段秒數', 'chunk-seconds', String(c.chunkSeconds || 5), [
+          {select('HTTP 收音最長分段秒數', 'chunk-seconds', String(c.chunkSeconds || 5), [
             ['2', '2 秒'],
             ['5', '5 秒'],
             ['10', '10 秒'],

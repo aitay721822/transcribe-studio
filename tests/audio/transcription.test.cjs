@@ -16,8 +16,8 @@ async function endpoint(handler) {
   };
 }
 
-function pcm(seconds, value = 8000) {
-  const b = Buffer.alloc(seconds * 16000 * 2);
+function pcm(seconds, value = 8000, rate = 16000) {
+  const b = Buffer.alloc(Math.round(seconds * rate) * 2);
   for (let i = 0; i < b.length; i += 2) b.writeInt16LE(value, i);
   return b;
 }
@@ -119,6 +119,50 @@ test('HTTP capture sends standalone WAVs in FIFO order, skips silence and drains
     await new Promise((r) => server.close(r));
   }
 });
+test('HTTP capture splits at pauses across packet sizes and sample rates without losing audio', async () => {
+  for (const rate of [16000, 24000, 48000]) {
+    const uploads = [],
+      events = [];
+    const { server, url } = await endpoint(async (req, res) => {
+      const form = await parse(req);
+      uploads.push(Buffer.from(await form.file.arrayBuffer()).subarray(44));
+      res.end(JSON.stringify({ text: '動態分段' }));
+    });
+    try {
+      const session = new HttpTranscriptionSession(
+        { fileUrl: url, fileModel: 'local', sampleRate: rate, chunkSeconds: 5 },
+        (event) => events.push(event)
+      );
+      await session.connect();
+      const audio = Buffer.concat([
+        pcm(1, 0, rate),
+        pcm(1, 8000, rate),
+        pcm(0.4, 0, rate),
+        pcm(0.6, 8000, rate),
+        pcm(0.9, 0, rate),
+        pcm(0.5, 8000, rate),
+      ]);
+      // Deliberately split analysis frames between transport packets.
+      for (let offset = 0; offset < audio.length; offset += 638)
+        assert(session.audio(audio.subarray(offset, offset + 638)));
+      await session.close();
+      assert.equal(uploads.length, 2);
+      assert.deepEqual(Buffer.concat(uploads), audio);
+      assert.equal(uploads[0].length, Math.round(3.9 * rate) * 2);
+      const ranges = events
+        .filter((event) => event.type === 'segment')
+        .map((event) => [event.segment.start, event.segment.end]);
+      assert.deepEqual(ranges, [
+        [0, 3.9],
+        [3.9, 4.4],
+      ]);
+    } finally {
+      server.closeAllConnections();
+      await new Promise((resolve) => server.close(resolve));
+    }
+  }
+});
+
 test('HTTP validation, error responses and cancellation avoid leaking secrets or late transcripts', async () => {
   assert.throws(
     () => validateTranscription({ fileUrl: 'ws://localhost', fileModel: 'local' }),
