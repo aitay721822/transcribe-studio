@@ -76,14 +76,14 @@ npm run package:mac
 
 ### 使用 tag 發布版本
 
-版本 tag 須與 `package.json` 一致，例如目前版本為 `0.4.1`：
+版本 tag 須與 `package.json` 一致，例如目前版本為 `0.4.2`：
 
 ```sh
-git tag -a v0.4.1 -m "Release 0.4.1"
-git push origin v0.4.1
+git tag -a v0.4.2 -m "Release 0.4.2"
+git push origin v0.4.2
 ```
 
-推送 `v0.4.1` 或 `0.4.1` 形式的 tag 後，GitHub Actions 會驗證版本、執行測試並建置 Windows 安裝程式與 Mac arm64 DMG。兩個平台皆成功後，才會在 [Releases](https://github.com/aitay721822/transcribe-studio/releases) 建立版本頁、上傳兩個安裝檔與 `SHA256SUMS.txt`，並產生版本說明。帶有 `-beta.1` 等後綴的版本會標示為預先發布。
+推送 `v0.4.2` 或 `0.4.2` 形式的 tag 後，GitHub Actions 會驗證版本、執行測試並建置 Windows 安裝程式與 Mac arm64 DMG。兩個平台皆成功後，才會在 [Releases](https://github.com/aitay721822/transcribe-studio/releases) 建立版本頁、上傳兩個安裝檔與 `SHA256SUMS.txt`，並產生版本說明。帶有 `-beta.1` 等後綴的版本會標示為預先發布。
 
 Tag 發布預設不使用 Mac 簽章憑證；有正式簽章需求時，使用手動 workflow 的 `signed_release` 流程。分支與 PR 驗證不會建立 Release。
 
