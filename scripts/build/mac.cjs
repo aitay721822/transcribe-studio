@@ -1,6 +1,6 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');
+const childProcess = require('node:child_process');
 
 /** Fail before distribution if an app contains a foreign FFmpeg or Claude binary. */
 module.exports = async function verifyMacBundle(context) {
@@ -20,11 +20,17 @@ module.exports = async function verifyMacBundle(context) {
   for (const binary of binaries) {
     await fs.access(binary);
     await fs.chmod(binary, 0o755);
-    const result = spawnSync('/usr/bin/lipo', ['-verify_arch', arch, binary], {
+    // lipo treats every argument after -verify_arch as an architecture name.
+    const result = childProcess.spawnSync('/usr/bin/lipo', [binary, '-verify_arch', arch], {
       encoding: 'utf8',
       windowsHide: true,
     });
-    if (result.error || result.status !== 0)
-      throw new Error(`Incorrect macOS binary architecture: ${path.basename(binary)}`);
+    if (result.error || result.status !== 0) {
+      const detail =
+        result.error?.message ||
+        result.stderr?.trim() ||
+        `lipo exited with status ${result.status}`;
+      throw new Error(`Incorrect macOS binary architecture: ${path.basename(binary)}: ${detail}`);
+    }
   }
 };

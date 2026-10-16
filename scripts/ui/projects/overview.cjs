@@ -40,6 +40,7 @@ async function main() {
     await page.reload();
     await require('../setup/helpers.cjs').overview(page);
     await page.locator(`[data-project="${fixture.id}"]`).click();
+    await page.getByRole('heading', { name: '產品開發', exact: true }).waitFor();
     await page.getByRole('heading', { name: '總覽', exact: true }).waitFor();
     assert.deepEqual(await page.locator('.project-overview-stat strong').allTextContents(), [
       '12',
@@ -118,6 +119,7 @@ async function main() {
     await page.locator('#import-project').waitFor();
     assert.equal(await page.locator('#import-project').inputValue(), fixture.id);
     await page.locator(`[data-project="${fixture.otherId}"]`).click();
+    await page.getByRole('heading', { name: '其他專案', exact: true }).waitFor();
     assert.deepEqual(await page.locator('.project-overview-stat strong').allTextContents(), [
       '1',
       '0',
