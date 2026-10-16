@@ -8,6 +8,23 @@ export interface InputDevice {
   isCommunications?: boolean;
 }
 
+export interface PlaybackDevice {
+  id: string;
+  label: string;
+  isDefault?: boolean;
+  muted?: boolean;
+  volume?: number;
+}
+
+export type PlaybackEvent =
+  | { id: string; type: 'audio'; samples: Uint8Array }
+  | { id: string; type: 'error'; message: string };
+
+export function selectedSource(playback: string, microphone: string): string {
+  if (playback === 'none') return microphone === 'none' ? 'none' : 'mic';
+  return microphone === 'none' ? 'system' : 'both';
+}
+
 export function cleanDeviceName(label: string): string {
   return label.replace(/^(?:Default|Communications|預設|默认|通訊|通信)\s*[-–—:：]\s*/i, '').trim();
 }

@@ -206,6 +206,7 @@ export interface UiState {
   source: string;
   recordOnly: boolean;
   microphoneId?: string;
+  playbackId?: string;
   inputDevices?: InputDevice[];
   audioSourceMode?: 'device' | 'file';
   sourceTab: string;

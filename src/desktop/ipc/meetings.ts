@@ -10,19 +10,26 @@ export function registerMeetings(ctx: DesktopContext) {
     sanitizeMeeting(store.createMeeting(id, title, source))
   );
   handle('meeting:get', (id) => sanitizeMeeting(meeting(id)));
-  handle('meeting:delete', (id) =>
-    removeMeeting(store, ctx.dataDir, id, () => {
-      const m = meeting(id);
+  handle('meeting:delete', async (id) => {
+    const ensureIdle = () => {
+      meeting(id);
       if (
         [...ctx.recordings.values()].some((r) => r.meetingId === id) ||
         ctx.agent.isRunningMeeting(id) ||
         ctx.asr.has(id) ||
-        ctx.rtcCaches.has(id) ||
-        m.status === 'transcribing'
+        ctx.rtcCaches.has(id)
       )
         throw new Error('請先結束此會議的錄音、辨識與 Agent 工作');
-    })
-  );
+    };
+
+    ensureIdle();
+    try {
+      await ctx.asrTasks.prepareDeletion(id);
+      return await removeMeeting(store, ctx.dataDir, id, ensureIdle);
+    } finally {
+      ctx.asrTasks.endDeletion(id);
+    }
+  });
   handle('meeting:update', (id, patch, version, annotationScope) => {
     if ('agentSessions' in patch || 'agentHistory' in patch)
       throw new Error('Agent session 由 harness 管理');

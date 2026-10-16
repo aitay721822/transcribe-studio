@@ -216,8 +216,7 @@ async function main() {
       .locator('summary')
       .click();
     assert.match(await page.locator('pre[aria-label="output（完整回傳）"]').textContent(), /END-1/);
-    await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(480, 700));
-    await page.waitForFunction(() => innerWidth === 480);
+    await require('../setup/helpers.cjs').resizeWindow(app, page, 480, 700);
     assert(
       await page.evaluate(() =>
         [...document.querySelectorAll('.agent-tool-trace')].every(

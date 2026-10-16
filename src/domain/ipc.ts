@@ -3,7 +3,11 @@ import type { Revision } from '../persistence/store';
 import type { DetectedAgent } from '../services/agents/detection';
 import type { NoteAnnotation } from './annotations';
 import type { AsrEvent } from './asr/config';
+import type { AsrConnectionStatus, ConnectionAction } from './asr/connection';
 import type { AudioJob } from './asr/file-progress';
+import type { FailureInfo } from './asr/retry';
+import type { ChunkRange, TaskAction, TaskFilter, TaskPage } from './asr/tasks';
+import type { PlaybackDevice, PlaybackEvent } from './audio-devices';
 import type {
   AgentEvent,
   AgentRequest,
@@ -36,7 +40,7 @@ export interface SpeechConnection {
 }
 export type InputState = ReturnType<Agent['inputState']>;
 type Removal = { warnings: string[] };
-type AudioOptions = { denoise?: boolean };
+type AudioOptions = { denoise?: boolean; start?: number; end?: number; replace?: boolean };
 type PickedFile = { id: string; name: string; size: number };
 export interface IpcCommands {
   bootstrap: () => {
@@ -107,17 +111,34 @@ export interface IpcCommands {
   'media:status': () => MediaPermissions;
   'media:prepare': (source: string) => Promise<MediaPermissions>;
   'media:settings': (kind: 'microphone' | 'screen') => Promise<void>;
+  'media:playback-devices': () => Promise<PlaybackDevice[]>;
+  'media:playback-start': (id: string, deviceId: string) => Promise<{ sampleRate: number }>;
+  'media:playback-stop': (id: string) => void;
   'audio:start': (id: string) => Promise<string>;
   'audio:chunk': (id: string, bytes: ArrayBuffer) => number;
-  'audio:finish': (id: string, duration: number) => Meeting;
+  'audio:finish': (id: string, duration: number, interrupted?: boolean) => Meeting;
   'audio:jobs': () => AudioJob[];
-  'audio:cancel': (id: string) => void;
+  'audio:cancel': (id: string) => Promise<void>;
   'asr:start': (id: string) => Promise<SpeechConnection>;
   'asr:audio': (id: string, bytes: ArrayBuffer) => boolean;
   'asr:commit': (id: string) => void;
   'asr:stop': (id: string) => Promise<void>;
-  'rtc:signal': (id: string, offer: string) => Promise<RTCSessionDescriptionInit>;
-  'rtc:event': (id: string, data: unknown, elapsed: number) => void;
+  'asr:tasks': (filter?: TaskFilter) => TaskPage;
+  'asr:task-ranges': (
+    id: string,
+    offset: number
+  ) => { items: ChunkRange[]; nextOffset: number | null };
+  'asr:task-action': (ids: string[], action: TaskAction) => Promise<void>;
+  'asr:background': (paused: boolean) => Promise<void>;
+  'asr:auto-recovery': (meetingId: string, enabled?: boolean) => boolean;
+  'asr:reassign': (ids: string[]) => Promise<void>;
+  'asr:connections': () => AsrConnectionStatus[];
+  'asr:connection-action': (id: string, action: ConnectionAction) => void;
+  'asr:online': () => void;
+  'rtc:signal': (id: string, offer: string, epoch?: number) => Promise<RTCSessionDescriptionInit>;
+  'rtc:event': (id: string, data: unknown, elapsed: number, epoch?: number) => void;
+  'rtc:state': (id: string, epoch: number, connected: boolean, failure?: FailureInfo) => void;
+  'rtc:config': (id: string, epoch: number) => SpeechConnection;
   'file:pick': (kind: string) => Promise<PickedFile[]>;
   'file:transcribe': (
     projectId: string,
@@ -176,6 +197,9 @@ export interface IpcEvents {
   'audio:progress': AudioJob;
   'app:close-request': Record<string, never>;
   'connection:event': ConnectionEvent;
+  'media:playback': PlaybackEvent;
+  'asr:tasks-changed': { meetingId?: string };
+  'asr:connection': AsrConnectionStatus;
 }
 export type Invoke = <K extends keyof IpcCommands>(
   name: K,

@@ -2,7 +2,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict'),
   path = require('node:path'),
   vm = require('node:vm');
-const { inputDeviceCatalog } = require('../../dist/domain/audio-devices.cjs');
+const { inputDeviceCatalog, selectedSource } = require('../../dist/domain/audio-devices.cjs');
 
 const raw = (id, label, groupId = '') => ({ kind: 'audioinput', deviceId: id, label, groupId });
 
@@ -153,4 +153,30 @@ test('permission preflight blocks capture; microphone denial releases an existin
   await assert.rejects(allowed.openAudioSources('both'), /microphone denied/);
   assert.equal(opened, 1);
   assert.equal(stopped, 1);
+});
+
+test('independent device selections cover all combinations and no-capture never requests permission', async () => {
+  assert.equal(selectedSource('none', 'none'), 'none');
+  assert.equal(selectedSource('none', 'mic:usb'), 'mic');
+  assert.equal(selectedSource('speaker', 'none'), 'system');
+  assert.equal(selectedSource('speaker', 'mic:usb'), 'both');
+  let permissions = 0;
+  const { openAudioSources } = await sources({}, async () => permissions++);
+  await assert.rejects(openAudioSources('none'), /至少選擇/);
+  assert.equal(permissions, 0);
+});
+
+test('microphone-only capture uses the exact input and never opens a playback stream', async () => {
+  const stream = { getTracks: () => [] };
+  const { openAudioSources } = await sources({
+    getDisplayMedia: () => assert.fail('playback must not be opened'),
+
+    getUserMedia: async (constraints) => {
+      assert.equal(constraints.audio.deviceId.exact, 'usb-microphone');
+      return stream;
+    },
+  });
+  const result = await openAudioSources('mic', 'usb-microphone', 'unused-speaker');
+  assert.equal(result.length, 1);
+  assert.equal(result[0], stream);
 });

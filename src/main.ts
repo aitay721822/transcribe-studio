@@ -5,6 +5,8 @@ import { pathToFileURL } from 'node:url';
 import type { BrowserWindow } from 'electron';
 import { app, dialog, ipcMain, nativeImage, net, protocol } from 'electron';
 import { registerAgent } from './desktop/agent-routes';
+import { registerCaptureLifecycle } from './desktop/asr/lifecycle';
+import { legacyAudioJob, registerAsrTasks } from './desktop/asr/tasks';
 import type { ActiveRecording, DesktopContext } from './desktop/context';
 import { registerDiagnostics } from './desktop/diagnostics/routes';
 import { registerAsr } from './desktop/ipc/asr';
@@ -23,6 +25,7 @@ import { Agent } from './harness/coordinator';
 import { Store } from './persistence/store';
 import { ImageVault } from './services/agents/conversation/images';
 import { prepareRuntimePath } from './services/agents/posix';
+import { AsrTaskService } from './services/asr/tasks';
 import { credentialRedactor } from './services/security/redaction';
 import type { SettingsVault } from './services/security/settings';
 import { closeWorkspace, inside } from './services/workspace/files';
@@ -46,6 +49,7 @@ let diagnostics: ReturnType<typeof registerDiagnostics>;
 let audioImports: ReturnType<typeof registerImports>;
 let temporary: ReturnType<typeof registerAgent>;
 let vault: SettingsVault;
+let asrTasks: AsrTaskService;
 
 let settingsSnapshot: () => Partial<Settings> = () => ({});
 
@@ -141,6 +145,29 @@ app
     });
     settings.applyWindowTheme(settings.settingsPublic().theme);
     win = createWindow(path.join(__dirname, 'transport', 'preload.cjs'));
+    asrTasks = new AsrTaskService({
+      store,
+      directory: path.join(dataDir, 'asr-spool'),
+
+      settings: () => settings.settingsInternal().asr,
+
+      changed: (meetingId, task) => {
+        if (task) {
+          send('audio:progress', legacyAudioJob(task));
+          if (task.source === 'import' && store.get('meetings', task.meetingId)) {
+            let status = 'transcribing';
+            if (task.state === 'completed') status = 'completed';
+            if (['cancelled', 'paused', 'needs_attention'].includes(task.state))
+              status = 'interrupted';
+            if (store.get('meetings', task.meetingId).status !== status)
+              store.updateMeeting(task.meetingId, { status });
+          }
+        }
+        send('asr:tasks-changed', { meetingId });
+        const meeting = meetingId ? store.get('meetings', meetingId) : undefined;
+        if (meeting) send('meeting:event', settings.sanitizeMeeting(meeting));
+      },
+    });
     const ctx: DesktopContext = {
       handle,
       win,
@@ -150,6 +177,7 @@ app
       dataDir,
       bundledSkills: path.join(__dirname, '..', 'skills'),
       asr,
+      asrTasks,
       recordings,
       imports: new Map(),
       rtcCaches: new Map(),
@@ -174,11 +202,14 @@ app
       registerMeetings,
       registerAudio,
       registerAsr,
+      registerAsrTasks,
       registerSettings,
       registerWindow,
     ])
       register(ctx);
     temporary = registerAgent(ctx);
+    registerCaptureLifecycle(ctx);
+    await asrTasks.start();
     win.webContents.on('did-start-loading', () => {
       void temporary.close();
     });
@@ -213,19 +244,26 @@ app.on('before-quit', (event) => {
   runtimeClosed = true;
   closing = true;
   for (const [id, recording] of recordings) {
-    fs.fsyncSync(recording.fd);
-    fs.closeSync(recording.fd);
-    recordings.delete(id);
+    try {
+      fs.fsyncSync(recording.fd);
+    } catch {
+      /* Recovery retains the readable prefix. */
+    } finally {
+      fs.closeSync(recording.fd);
+      recordings.delete(id);
+    }
   }
   for (const session of asr.values()) {
     session.cancel?.();
     session.ws?.terminate();
   }
   Promise.allSettled([
+    ...[...asr.values()].map((session) => session.close()),
     agent?.close(),
     temporary?.close(),
     diagnostics?.close(),
     audioImports?.close(),
+    asrTasks?.close(),
     closeWorkspace(),
     vault?.flush(),
   ]).finally(() => app.quit());

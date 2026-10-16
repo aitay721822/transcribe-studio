@@ -18,7 +18,9 @@ async function main() {
     env,
   });
   try {
-    await require('./setup/helpers.cjs').overview(await app.firstWindow());
+    await require('./setup/helpers.cjs').overview(
+      await require('./setup/helpers.cjs').firstWindow(app)
+    );
     const run = await app.evaluate(async ({ app }, port) => {
       const require = process
         .getBuiltinModule('module')

@@ -4,7 +4,7 @@ import { icon } from '../../components/icons';
 import { Button } from '../../primitives/button';
 import { Input } from '../../primitives/input';
 import { Select } from '../../primitives/select';
-import { projectOverview } from '../../projects/overview';
+import { ProjectOverview } from '../../projects/overview';
 import type { PageContext } from './contracts';
 
 export function libraryViews(context: PageContext) {
@@ -227,7 +227,7 @@ export function libraryViews(context: PageContext) {
             {btn('加入資料夾', 'add-folder', 'plus', 'primary')}
           </>
         )}
-        {projectOverview(p, state, meetingsTable)}
+        <ProjectOverview key={p.id} project={p} state={state} table={meetingsTable} />
       </div>
     );
   }

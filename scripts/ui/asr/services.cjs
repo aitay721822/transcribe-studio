@@ -127,11 +127,17 @@ async function main() {
     assert(recorded.segments.every((s) => s.final && s.recordingId === recorded.recordings[0].id));
     const before = service.uploads.length;
     await page.evaluate(
-      async ({ id, rid }) => window.studio.invoke('recording:transcribe', id, rid),
+      async ({ id, rid }) =>
+        window.studio.invoke('recording:transcribe', id, rid, { replace: true }),
       { id: recorded.id, rid: recorded.recordings[0].id }
     );
-    assert.equal(service.uploads.length, before + 1);
-    assert.equal(service.uploads.at(-1).name, 'recording-001.wav');
+    await require('./wait.cjs').waitTask(
+      page,
+      { meetingId: recorded.id, source: 'recording' },
+      'completed'
+    );
+    assert(service.uploads.length >= before + 1);
+    assert.equal(service.uploads.at(-1).name, 'segment.wav');
     assert.equal(service.uploads.at(-1).bytes.readUInt32LE(24), 16000);
     assert.equal(service.uploads.at(-1).auth, 'Bearer file-test-key');
     assert.equal(service.uploads.at(-1).language, 'zh');
@@ -147,10 +153,10 @@ async function main() {
     await page.locator('[data-audio-denoise]').uncheck();
     await page.locator('[data-action="pick-files"]').click();
     await page.locator('[data-action="transcribe-files"]').click();
-    await page.getByText('sample.wav 已完成', { exact: true }).waitFor();
+    await require('./wait.cjs').waitTask(page, { source: 'import' }, 'completed');
     assert.deepEqual(
       service.uploads.slice(-3).map((u) => u.name),
-      ['sample-001.wav', 'sample-002.wav', 'sample-003.wav']
+      ['segment.wav', 'segment.wav', 'segment.wav']
     );
     const imported = (await page.evaluate(() => window.studio.invoke('bootstrap'))).meetings.find(
       (m) => m.title === 'sample'
@@ -175,8 +181,7 @@ async function main() {
     );
     await fs.mkdir('output/playwright', { recursive: true });
     await page.screenshot({ path: 'output/playwright/speech-services.png' });
-    await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(480, 700));
-    await page.waitForFunction(() => innerWidth === 480);
+    await require('../setup/helpers.cjs').resizeWindow(app, page, 480, 700);
     assert(await page.locator('#asr-file-url').isVisible());
     assert(
       await page.evaluate(

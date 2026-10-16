@@ -1,5 +1,6 @@
 import type { InputDevice } from '../../domain/audio-devices';
 import { inputDeviceCatalog } from '../../domain/audio-devices';
+import { openPlaybackStream } from './devices/playback-stream';
 
 export type { InputDevice } from '../../domain/audio-devices';
 
@@ -21,15 +22,26 @@ export async function listInputDevices(requestPermission = false): Promise<Input
   }
 }
 
-export async function openAudioSources(source: string, microphoneId = ''): Promise<MediaStream[]> {
+export async function openAudioSources(
+  source: string,
+  microphoneId = '',
+  playbackId = ''
+): Promise<MediaStream[]> {
+  if (!['mic', 'system', 'both'].includes(source))
+    throw new Error('請至少選擇一個播放裝置或麥克風');
   const streams: MediaStream[] = [];
   try {
     if (typeof window !== 'undefined') await window.studio?.invoke('media:prepare', source);
     if (source !== 'mic') {
-      const system = await navigator.mediaDevices.getDisplayMedia({
-        audio: true,
-        video: { width: 320, height: 180, frameRate: 1 },
-      });
+      const nativePlayback =
+        typeof document !== 'undefined' && document.documentElement.dataset.platform === 'win32';
+      if (playbackId && !nativePlayback) throw new Error('此平台尚未支援指定播放裝置擷取');
+      const system = nativePlayback
+        ? await openPlaybackStream(playbackId)
+        : await navigator.mediaDevices.getDisplayMedia({
+            audio: true,
+            video: { width: 320, height: 180, frameRate: 1 },
+          });
       streams.push(system);
       if (!system.getAudioTracks().length) throw new Error('沒有取得系統音訊，請確認音訊擷取權限');
       if (system.getAudioTracks().every((track) => track.readyState === 'ended'))

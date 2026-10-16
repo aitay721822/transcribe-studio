@@ -3,6 +3,7 @@ import { realtimeRate } from '../../domain/asr/realtime';
 import type { Invoke } from '../../domain/ipc';
 import { AudioHealth } from './lifecycle/health';
 import { flushPcm } from './lifecycle/pcm';
+import { openRecordingRtc } from './lifecycle/rtc';
 import { openAudioSources } from './sources';
 
 export class AudioCapture {
@@ -27,7 +28,10 @@ export class AudioCapture {
   worklet: AudioWorkletNode;
   recorder: MediaRecorder;
   pc: RTCPeerConnection;
+  private rtcController?: AbortController;
+  rtcEpoch = 0;
   writeError: unknown;
+  private savedSeconds = 0;
   lastCommit = 0;
   lastVoice = 0;
   hasVoice = false;
@@ -60,7 +64,8 @@ export class AudioCapture {
     recordOnly: boolean,
     settings: AsrSettings,
     offset = 0,
-    microphoneId = ''
+    microphoneId = '',
+    playbackId = ''
   ) {
     if (this.active || this.starting) throw new Error('錄音已啟動');
     this.starting = true;
@@ -71,8 +76,9 @@ export class AudioCapture {
     this.localQueue = Promise.resolve();
     this.streamQueue = Promise.resolve();
     this.writeError = null;
+    this.savedSeconds = 0;
     try {
-      this.sources = await openAudioSources(source, microphoneId);
+      this.sources = await openAudioSources(source, microphoneId, playbackId);
       this.context = new AudioContext();
       this.mix = this.context.createGain();
       this.mix.gain.value = source === 'both' ? 0.5 : 1;
@@ -102,11 +108,19 @@ export class AudioCapture {
       });
       this.recorder.ondataavailable = (e) => {
         if (!e.data.size) return;
+        const end = this.active ? this.elapsed() - this.offset : this.savedSeconds;
         this.localQueue = this.localQueue
-          .then(async () => this.api('audio:chunk', this.rid, await e.data.arrayBuffer()))
-          .catch((err) => {
+          .then(async () => {
+            if (this.writeError) return;
+            await this.api('audio:chunk', this.rid, await e.data.arrayBuffer());
+            this.savedSeconds = end;
+          })
+          .catch((err: unknown) => {
             this.writeError = err;
-            this.events({ type: 'error', message: `本地錄音寫入失敗：${err.message}` });
+            this.events({
+              type: 'source-ended',
+              message: `本地錄音寫入失敗，已停止收音；最後成功保存至 ${this.savedSeconds.toFixed(1)} 秒。`,
+            });
           });
       };
       this.recorder.start(1000);
@@ -148,7 +162,7 @@ export class AudioCapture {
               .catch(() => {});
           }
         }
-        if (data.audio && this.asrActive && settings.provider !== 'webrtc') {
+        if (data.audio && this.asrActive) {
           if (this.pending > 30) {
             this.asrActive = false;
             this.events({ type: 'error', message: 'ASR 串流壅塞，本地錄音仍持續；停止後可補辨識' });
@@ -173,7 +187,6 @@ export class AudioCapture {
       if (!recordOnly) {
         try {
           await this.api('asr:start', meetingId);
-          if (settings.provider === 'webrtc') await this.connectRTC(settings);
           this.asrActive = true;
         } catch (caughtErr) {
           const err = caughtErr instanceof Error ? caughtErr : new Error(String(caughtErr));
@@ -204,48 +217,32 @@ export class AudioCapture {
     }
   }
 
-  async connectRTC(settings: AsrSettings) {
-    this.pc = new RTCPeerConnection({ iceServers: settings.iceServers || [] });
-    this.destination.stream
-      .getAudioTracks()
-      .forEach((t) => this.pc.addTrack(t, this.destination.stream));
-    const channel = this.pc.createDataChannel(settings.channel || 'transcript');
+  async connectRTC(epoch: number): Promise<void> {
+    if (!this.active || this.stopping) return;
+    this.disconnectRTC();
+    this.rtcEpoch = epoch;
+    const controller = new AbortController();
+    this.rtcController = controller;
+    try {
+      const pc = await openRecordingRtc(
+        this.id,
+        epoch,
+        this.destination.stream,
+        this.api,
+        () => this.elapsed() - (this.offset || 0),
+        controller.signal
+      );
+      if (controller.signal.aborted || this.rtcEpoch !== epoch) pc.close();
+      else this.pc = pc;
+    } catch {
+      /* The main-process coordinator owns retry policy and status. */
+    }
+  }
 
-    const listen = (ch: RTCDataChannel) => {
-      ch.onmessage = (e) => {
-        try {
-          const data = JSON.parse(e.data);
-          this.api('rtc:event', this.id, data, this.elapsed() - (this.offset || 0)).catch((err) =>
-            this.events({ type: 'error', message: err.message })
-          );
-        } catch {
-          this.events({ type: 'error', message: 'WebRTC 逐字稿事件不是 JSON' });
-        }
-      };
-    };
-
-    listen(channel);
-    this.pc.ondatachannel = (e) => listen(e.channel);
-    this.pc.onconnectionstatechange = () => {
-      if (['failed', 'disconnected'].includes(this.pc.connectionState)) {
-        this.asrActive = false;
-        this.events({ type: 'error', message: 'WebRTC 連線中斷，本地錄音仍持續' });
-      }
-    };
-    await this.pc.setLocalDescription(await this.pc.createOffer());
-    await new Promise<void>((resolve, reject) => {
-      if (this.pc.iceGatheringState === 'complete') return resolve();
-      const timer = setTimeout(() => reject(new Error('ICE gathering 逾時')), 15000);
-      this.pc.onicegatheringstatechange = () => {
-        if (this.pc.iceGatheringState === 'complete') {
-          clearTimeout(timer);
-          resolve();
-        }
-      };
-    });
-    await this.pc.setRemoteDescription(
-      await this.api('rtc:signal', this.id, this.pc.localDescription.sdp)
-    );
+  disconnectRTC(): void {
+    this.rtcController?.abort();
+    this.pc?.close();
+    this.pc = undefined;
   }
 
   async togglePause() {
@@ -285,10 +282,18 @@ export class AudioCapture {
       await this.streamQueue;
       await this.api('asr:stop', this.id);
       this.pc?.close();
+      this.disconnectRTC();
       for (const s of this.sources) s.getTracks().forEach((t) => t.stop());
       await this.context.close();
-      const result = await this.api('audio:finish', this.rid, duration);
+      const result = await this.api(
+        'audio:finish',
+        this.rid,
+        this.writeError ? this.savedSeconds : duration,
+        !!this.writeError
+      );
       if (this.writeError) throw this.writeError;
+      if (result.status === 'interrupted')
+        throw new Error('錄音同步至磁碟失敗，已保留可讀取的部分，請釋放空間後檢查原始錄音');
       return result;
     } finally {
       this.active = false;

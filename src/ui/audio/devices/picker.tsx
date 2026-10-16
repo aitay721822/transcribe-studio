@@ -1,6 +1,7 @@
 import type { InputDevice } from '../../../domain/audio-devices';
 import { Select } from '../../primitives/select';
 import { AudioPermissions, useMediaPermissions } from './permissions';
+import { usePlaybackDevices } from './playback';
 
 export function DevicePicker({
   id,
@@ -8,55 +9,91 @@ export function DevicePicker({
   value,
   disabled,
   onChange,
+  playback = 'none',
+  onPlaybackChange,
 }: {
   id: string;
   devices: InputDevice[];
   value: string;
   disabled?: boolean;
   onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void;
+  playback?: string;
+  onPlaybackChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void;
 }) {
   const route = devices.find((d) => d.id === '');
   const permissions = useMediaPermissions();
+  const outputs = usePlaybackDevices(Boolean(disabled));
   return (
     <>
-      <Select
-        id={id}
-        value={value}
-        disabled={disabled}
-        onChange={onChange}
-        popupWidth={440}
-        wrapOptions
-      >
-        <optgroup label="麥克風">
-          <option value="mic:">{route?.label || '系統預設麥克風（點偵測取得名稱）'}</option>
-          {devices
-            .filter((d) => d.role !== 'default' && d.role !== 'communications' && d.id)
-            .map((d) => (
-              <option key={d.id} value={`mic:${d.id}`}>
-                {d.label}
+      <div className="field">
+        <label htmlFor={`${id}-playback`}>播放裝置</label>
+        <Select
+          id={`${id}-playback`}
+          value={playback}
+          disabled={disabled || outputs.loading}
+          onChange={onPlaybackChange}
+          popupWidth={440}
+          wrapOptions
+        >
+          <option value="none">不擷取</option>
+          <option value="" disabled={permissions?.systemAudio === false}>
+            {outputs.devices.find((device) => device.isDefault)?.label
+              ? `系統預設 · ${outputs.devices.find((device) => device.isDefault)?.label}`
+              : '系統預設播放裝置'}
+          </option>
+          {outputs.devices.map((device) => (
+            <option key={device.id} value={device.id} disabled={permissions?.systemAudio === false}>
+              {device.label}
+            </option>
+          ))}
+          {playback &&
+            playback !== 'none' &&
+            !outputs.devices.some((device) => device.id === playback) && (
+              <option value={playback} disabled>
+                所選播放裝置已離線，請重新選擇
               </option>
-            ))}
-        </optgroup>
-        {devices.some((d) => d.role === 'communications') && (
-          <optgroup label="通訊路由">
+            )}
+        </Select>
+        {outputs.error && (
+          <p role="alert" className="error">
+            {outputs.error}
+          </p>
+        )}
+      </div>
+      <div className="field">
+        <label htmlFor={id}>麥克風</label>
+        <Select
+          id={id}
+          value={value}
+          disabled={disabled}
+          onChange={onChange}
+          popupWidth={440}
+          wrapOptions
+        >
+          <option value="none">不擷取</option>
+          <optgroup label="麥克風">
+            <option value="mic:">{route?.label || '系統預設麥克風（點偵測取得名稱）'}</option>
             {devices
-              .filter((d) => d.role === 'communications')
+              .filter((d) => d.role !== 'default' && d.role !== 'communications' && d.id)
               .map((d) => (
                 <option key={d.id} value={`mic:${d.id}`}>
                   {d.label}
                 </option>
               ))}
           </optgroup>
-        )}
-        <optgroup label="電腦播放音訊">
-          <option value="system" disabled={permissions?.systemAudio === false}>
-            系統音訊（預設播放裝置）
-          </option>
-          <option value="both" disabled={permissions?.systemAudio === false}>
-            系統音訊＋選定麥克風
-          </option>
-        </optgroup>
-      </Select>
+          {devices.some((d) => d.role === 'communications') && (
+            <optgroup label="通訊路由">
+              {devices
+                .filter((d) => d.role === 'communications')
+                .map((d) => (
+                  <option key={d.id} value={`mic:${d.id}`}>
+                    {d.label}
+                  </option>
+                ))}
+            </optgroup>
+          )}
+        </Select>
+      </div>
       <AudioPermissions permissions={permissions} />
     </>
   );
@@ -74,8 +111,8 @@ export function DeviceDetails({
   actual?: { label: string; sampleRate?: number; channelCount?: number };
 }) {
   const device = devices.find((d) => d.id === (value === 'both' ? microphoneId : value.slice(4)));
-  if (value === 'system')
-    return <p className="help">擷取目前系統預設播放裝置的聲音；麥克風不會收音。</p>;
+  if (value === 'none') return <p className="help">請至少選擇一個播放裝置或麥克風。</p>;
+  if (value === 'system') return <p className="help">擷取所選播放裝置的聲音；麥克風不會收音。</p>;
 
   const microphoneRoute = () => {
     if (device?.role === 'default' || !device?.id) {

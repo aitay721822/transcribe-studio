@@ -1,21 +1,21 @@
 import { realtimeRate } from '../../domain/asr/realtime';
 import { credentialRedactor } from '../../services/security/redaction';
-import { createAsrSession, normalize } from '../../transport/asr';
-import { signalOffer } from '../../transport/webrtc';
+import { createAsrSession } from '../../transport/asr';
+import { registerRealtime } from '../asr/realtime';
 import type { DesktopContext } from '../context';
 
 export function registerAsr(ctx: DesktopContext) {
+  registerRealtime(ctx);
   const { handle, store, asr, recordings, rtcCaches, meeting, settingsInternal, send } = ctx;
   handle('asr:start', async (id) => {
     meeting(id);
     if (asr.has(id)) throw new Error('ASR 已連線');
     const config = settingsInternal().asr;
     const redact = credentialRedactor({ asr: config });
-    if (config.provider === 'webrtc')
-      return { provider: 'webrtc', channel: config.channel, sampleRate: config.sampleRate };
     config.sampleRate = realtimeRate(config);
     const record = [...recordings.values()].find((r) => r.meetingId === id);
-    const stream = createAsrSession(config, (ev) => {
+
+    const emit = (ev: import('../../domain/asr/config').AsrEvent) => {
       if (ev.message) ev.message = redact.text(ev.message);
       if (ev.type === 'segment') {
         ev.segment = {
@@ -29,7 +29,33 @@ export function registerAsr(ctx: DesktopContext) {
         store.segment(id, ev.segment);
       }
       send('asr:event', { meetingId: id, ...ev });
-    });
+    };
+
+    let stream: import('../../domain/asr/config').SpeechSession;
+    if (config.provider === 'transcriptions' && record) {
+      stream = ctx.asrTasks.createLive({
+        meetingId: id,
+        recordingId: record.id,
+        offset: record.offset,
+        config,
+
+        emit: (event) => send('asr:event', { meetingId: id, ...event }),
+      });
+    } else if (record) {
+      stream = ctx.asrTasks.createRealtime({
+        meetingId: id,
+        recordingId: record.id,
+        offset: record.offset,
+        emit,
+
+        status: (value) => send('asr:connection', value),
+
+        rtc: (epoch) => {
+          rtcCaches.delete(id);
+          send('asr:event', { type: 'rtc-connect', meetingId: id, epoch });
+        },
+      });
+    } else stream = createAsrSession(config, emit);
     asr.set(id, stream);
     try {
       await stream.connect();
@@ -54,32 +80,6 @@ export function registerAsr(ctx: DesktopContext) {
     } finally {
       asr.delete(id);
       rtcCaches.delete(id);
-    }
-  });
-  handle('rtc:signal', async (id, offer) => {
-    meeting(id);
-    const c = settingsInternal().asr;
-    if (c.provider !== 'webrtc') throw new Error('請選擇 WebRTC ASR');
-    return signalOffer(c, offer);
-  });
-  handle('rtc:event', (id, data, elapsed) => {
-    meeting(id);
-    const c = settingsInternal().asr;
-    if (c.provider !== 'webrtc') throw new Error('ASR 類型錯誤');
-    if (!rtcCaches.has(id)) rtcCaches.set(id, new Map());
-    const seg = normalize(data, c, elapsed, rtcCaches.get(id));
-    if (seg) {
-      const record = [...recordings.values()].find((r) => r.meetingId === id);
-      const saved = {
-        ...seg,
-        id: record ? `${record.id}:${seg.id}` : seg.id,
-        providerId: seg.id,
-        start: seg.start + (record?.offset || 0),
-        end: seg.end + (record?.offset || 0),
-        recordingId: record?.id,
-      };
-      store.segment(id, saved);
-      send('asr:event', { meetingId: id, type: 'segment', segment: saved });
     }
   });
 }

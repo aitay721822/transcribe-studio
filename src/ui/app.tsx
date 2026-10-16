@@ -112,6 +112,7 @@ function buildContent(): ShellContent {
     live: livePage,
     import: importPage,
     meetings: meetingsPage,
+
     project: projectPage,
     workspace: workspacePage,
     settings: settingsPage,
@@ -172,12 +173,15 @@ async function init() {
     refreshAudioDevices().catch(() => {})
   );
   window.studio.on('asr:event', (ev) => {
+    if (ev.type === 'rtc-connect' && ev.meetingId === host.capture.id && ev.epoch !== undefined)
+      void host.capture.connectRTC(ev.epoch);
     if (ev.type === 'segment') {
       const m = state.meetings.find((m) => m.id === ev.meetingId);
       if (!m) return;
       const i = m.segments.findIndex((s) => s.id === ev.segment.id);
       if (i >= 0) m.segments[i] = ev.segment;
       else m.segments.push(ev.segment);
+      m.segments.sort((a, b) => a.start - b.start || a.end - b.end || a.id.localeCompare(b.id));
       if (
         state.view === 'workspace' &&
         state.meetingId === ev.meetingId &&
@@ -190,11 +194,23 @@ async function init() {
       }
     }
     if (ev.type === 'error') toast(ev.message, true);
+    if (ev.type === 'warning') toast(ev.message);
     if (ev.type === 'closed' && !host.capture.stopping && host.capture.active) {
       host.capture.asrActive = false;
       invalidateUI();
       toast(ev.message, true);
     }
+  });
+  window.studio.on('asr:connection', (status) => {
+    if (
+      status.meetingId === host.capture.id &&
+      status.state !== 'connected' &&
+      status.epoch !== host.capture.rtcEpoch
+    )
+      host.capture.disconnectRTC();
+  });
+  window.addEventListener('online', () => {
+    void api('asr:online').catch(() => {});
   });
   window.studio.on('agent:event', (ev) => {
     if ((ev.sessionId || undefined) !== state.temporaryChat?.id) return;
@@ -227,6 +243,7 @@ async function init() {
   });
   window.studio.on('meeting:event', (m) => {
     updateMeeting(m);
+    invalidateUI();
     if (state.view === 'import') render();
   });
   window.studio.on('audio:progress', (job) => {

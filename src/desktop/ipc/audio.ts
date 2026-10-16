@@ -37,24 +37,39 @@ export function registerAudio(ctx: DesktopContext) {
     if (!r) throw new Error('錄音工作階段已結束');
     const b = Buffer.from(bytes);
     if (b.length > 8 * 1024 * 1024) throw new Error('音訊片段過大');
-    fs.writeSync(r.fd, b);
-    r.bytes += b.length;
+    let written = 0;
+    while (written < b.length) {
+      const size = fs.writeSync(r.fd, b, written, b.length - written);
+      if (!size) throw new Error('錄音檔案無法繼續寫入');
+      written += size;
+      r.bytes += size;
+    }
     return r.bytes;
   });
-  handle('audio:finish', (rid, duration) => {
+  handle('audio:finish', (rid, duration, interrupted = false) => {
+    if (!Number.isFinite(duration) || duration < 0) throw new Error('錄音時間無效');
     const r = recordings.get(rid);
     if (!r) throw new Error('找不到錄音工作階段');
-    fs.fsyncSync(r.fd);
-    fs.closeSync(r.fd);
-    recordings.delete(rid);
+    let flushed = true;
+    try {
+      fs.fsyncSync(r.fd);
+    } catch {
+      flushed = false;
+    } finally {
+      fs.closeSync(r.fd);
+      recordings.delete(rid);
+    }
     const m = meeting(r.meetingId);
     const record = m.recordings.find((a) => a.id === rid);
-    record.complete = true;
+    record.complete = flushed && !interrupted;
     record.bytes = r.bytes;
     record.duration = duration;
     store.putMeeting(m);
     return sanitizeMeeting(
-      store.updateMeeting(m.id, { duration: r.offset + duration, status: 'completed' })
+      store.updateMeeting(m.id, {
+        duration: r.offset + duration,
+        status: record.complete ? 'completed' : 'interrupted',
+      })
     );
   });
 }

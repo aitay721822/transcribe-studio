@@ -46,7 +46,7 @@ async function main() {
   let app;
   try {
     app = await launch();
-    const page = await app.firstWindow();
+    const page = await require('../setup/helpers.cjs').firstWindow(app);
     await page.waitForLoadState('load');
     await page.waitForFunction(() => !!window.studio);
     const publicSettings = await page.evaluate(
@@ -90,7 +90,7 @@ async function main() {
     await app.close();
     app = null;
     app = await launch();
-    const restored = await app.firstWindow();
+    const restored = await require('../setup/helpers.cjs').firstWindow(app);
     await restored.waitForLoadState('load');
     const saved = await restored.evaluate(
       async () => (await window.studio.invoke('bootstrap')).settings

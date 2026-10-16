@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { selectedSource } from '../../../domain/audio-devices';
 import type { Settings, TranscriptSegment } from '../../../domain/models';
 import { Button } from '../../primitives/button';
 import { useInputDevices } from '../devices/discovery';
@@ -9,12 +10,18 @@ export function SpeechTestPanel({
   settings,
   initialDevice = 'mic:',
   initialMicrophone = '',
+  initialPlayback = '',
 }: {
   settings: Settings;
   initialDevice?: string;
   initialMicrophone?: string;
+  initialPlayback?: string;
 }) {
   const [device, setDevice] = useState(initialDevice);
+  const [playback, setPlayback] = useState(
+    ['system', 'both'].includes(initialDevice) ? initialPlayback : 'none'
+  );
+  const source = device.startsWith('mic:') ? 'mic' : device;
   const [status, setStatus] = useState('選擇裝置，開始後說一段話，例如「今天要確認會議決議」。');
   const [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
@@ -30,6 +37,7 @@ export function SpeechTestPanel({
   const [microphone, setMicrophone] = useState(
     initialDevice.startsWith('mic:') ? initialDevice.slice(4) : initialMicrophone
   );
+  const microphoneValue = ['system', 'none'].includes(source) ? 'none' : `mic:${microphone}`;
   const { devices, loading, error: deviceError, refresh } = useInputDevices(busy);
   const [actual, setActual] = useState<{
     label: string;
@@ -41,14 +49,14 @@ export function SpeechTestPanel({
       !loading &&
       !deviceError &&
       !busy &&
-      (device === 'both' || device.startsWith('mic:')) &&
+      (source === 'both' || source === 'mic') &&
       !devices.some((d) => d.id === microphone)
     ) {
-      if (device.startsWith('mic:')) setDevice('mic:');
+      if (source === 'mic') setDevice('mic:');
       setMicrophone('');
       setActual(undefined);
     }
-  }, [devices, loading, busy, deviceError, device, microphone]);
+  }, [devices, loading, busy, deviceError, source, microphone]);
   useEffect(() => {
     alive.current = true;
     const unsubscribe = window.studio.on('connection:event', (event) => {
@@ -117,11 +125,7 @@ export function SpeechTestPanel({
     });
     session.current = test;
     try {
-      await test.start(
-        settings,
-        device === 'system' || device === 'both' ? device : 'mic',
-        microphone
-      );
+      await test.start(settings, source, microphone, playback === 'none' ? '' : playback);
     } catch (caughtE) {
       const e = caughtE instanceof Error ? caughtE : new Error(String(caughtE));
 
@@ -170,19 +174,29 @@ export function SpeechTestPanel({
   return (
     <div className="connection-test">
       <p className="help">音訊會傳送至目前選定的辨識服務，最長 90 秒；測試不建立會議或儲存錄音。</p>
-      <label htmlFor="connection-device">測試音訊裝置</label>
       <DevicePicker
         id="connection-device"
         devices={devices}
-        value={device}
+        value={microphoneValue}
+        playback={playback}
         disabled={busy || loading}
         onChange={(e) => {
-          setDevice(e.target.value);
+          setDevice(selectedSource(playback, e.target.value));
           setActual(undefined);
           if (e.target.value.startsWith('mic:')) setMicrophone(e.target.value.slice(4));
         }}
+        onPlaybackChange={(event) => {
+          setPlayback(event.target.value);
+          setDevice(selectedSource(event.target.value, microphoneValue));
+          setActual(undefined);
+        }}
       />
-      <DeviceDetails devices={devices} value={device} actual={actual} microphoneId={microphone} />
+      <DeviceDetails
+        devices={devices}
+        value={source === 'mic' ? `mic:${microphone}` : source}
+        actual={actual}
+        microphoneId={microphone}
+      />
       {deviceError && (
         <p className="error" role="alert">
           {deviceError}
@@ -208,7 +222,12 @@ export function SpeechTestPanel({
             {stopLabel()}
           </Button>
         ) : (
-          <Button className="btn primary" id="connection-start" onClick={start} disabled={loading}>
+          <Button
+            className="btn primary"
+            id="connection-start"
+            onClick={start}
+            disabled={loading || source === 'none'}
+          >
             開始說話辨識測試
           </Button>
         )}

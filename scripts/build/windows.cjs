@@ -25,6 +25,23 @@ async function compileWindowsHost(root) {
   if (result.error) throw result.error;
   if (result.status !== 0)
     throw new Error(result.stdout || result.stderr || 'Windows CLI host build failed');
+  const audio = spawnSync(
+    compiler,
+    [
+      '/nologo',
+      '/optimize+',
+      '/target:exe',
+      '/platform:anycpu',
+      '/reference:System.Web.Extensions.dll',
+      `/out:${path.join(directory, 'studio-loopback.exe')}`,
+      path.join(root, 'src/desktop/platform/audio/wasapi.cs'),
+      path.join(root, 'src/desktop/platform/audio/loopback.cs'),
+    ],
+    { windowsHide: true, encoding: 'utf8' }
+  );
+  if (audio.error) throw audio.error;
+  if (audio.status !== 0)
+    throw new Error(audio.stdout || audio.stderr || 'Audio host build failed');
 }
 
 module.exports = { compileWindowsHost };

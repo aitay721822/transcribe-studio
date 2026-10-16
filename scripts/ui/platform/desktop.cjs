@@ -27,7 +27,7 @@ async function main() {
     timeout: 60000,
   });
   try {
-    const page = await app.firstWindow();
+    const page = await require('../setup/helpers.cjs').firstWindow(app);
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.locator('.hero').waitFor();

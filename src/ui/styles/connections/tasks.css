@@ -1,0 +1,128 @@
+.asr-task-panel {
+  min-width: 0;
+}
+.project-overview > .asr-task-panel {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.asr-task-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.asr-task-heading h2 {
+  margin: 0 0 6px;
+}
+.asr-task-filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.asr-task-filters .field {
+  margin: 0;
+  min-width: 0;
+}
+.project-task-filters {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.asr-task-card {
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 18px;
+  margin: 12px 0;
+  min-width: 0;
+}
+.asr-task-card[data-state="needs_attention"] {
+  border-left-color: var(--danger);
+}
+.asr-task-card[data-state="completed"],
+.asr-task-card[data-state="cancelled"] {
+  border-left-color: var(--line);
+}
+.asr-task-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.asr-task-meeting {
+  padding: 0;
+  font-weight: 600;
+  text-align: left;
+  overflow-wrap: anywhere;
+  min-width: 0;
+  flex: 1;
+}
+.asr-task-state {
+  background: var(--accent-soft);
+  padding: 4px 10px;
+  border-radius: 7px;
+  white-space: nowrap;
+}
+.asr-task-meta,
+.asr-task-progress {
+  margin: 10px 0;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.asr-task-error {
+  color: var(--danger);
+  overflow-wrap: anywhere;
+}
+.asr-task-retry {
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.asr-task-actions,
+.asr-task-bulk {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.asr-task-bulk {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+.asr-task-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.asr-task-empty {
+  padding: 32px 20px;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  text-align: center;
+  color: var(--muted);
+}
+.asr-task-panel.compact {
+  margin: 20px 0;
+}
+@media (max-width: 760px) {
+  .asr-task-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .asr-task-card {
+    padding: 14px;
+  }
+  .asr-task-actions .btn {
+    white-space: normal;
+  }
+}
+@media (max-width: 520px) {
+  .asr-task-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

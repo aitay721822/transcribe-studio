@@ -2,8 +2,10 @@ import { randomUUID } from 'node:crypto';
 import WebSocket from 'ws';
 import type { AsrEvent, AsrSettings, SpeechSession } from '../domain/asr/config';
 import { validateRealtime } from '../domain/asr/realtime';
+import { AsrFailure, failureInfo, httpFailure, retryAfter } from '../domain/asr/retry';
 import type { TranscriptSegment } from '../domain/models';
 import { record } from '../domain/value';
+import { RealtimeCoverage } from './realtime/coverage';
 import { vllmTranscript } from './realtime/vllm';
 import { HttpTranscriptionSession } from './transcription/session';
 
@@ -26,8 +28,7 @@ function normalize(
   const data = record(value);
   const type = typeof data.type === 'string' ? data.type : '';
   if (config.provider === 'openai') {
-    if (type === 'error')
-      throw new Error(String(record(data.error).message || data.message || 'ASR 服務錯誤'));
+    if (type === 'error') throw protocolFailure(data);
     if (config.realtimeFlavor === 'vllm') return vllmTranscript(data, elapsed, cache);
     if (
       ![
@@ -84,6 +85,32 @@ function normalize(
   return seg;
 }
 
+function protocolFailure(data: Record<string, unknown>): AsrFailure {
+  const error = record(data.error);
+  const code = String(error.code || error.type || '');
+  if (
+    [
+      'invalid_api_key',
+      'authentication_error',
+      'permission_denied',
+      'model_not_found',
+      'insufficient_quota',
+      'billing_hard_limit_reached',
+    ].includes(code)
+  )
+    return new AsrFailure({
+      kind: 'configuration',
+      scope: 'none',
+      message: '即時辨識服務的驗證、模型或額度設定需要處理',
+    });
+  if (code === 'rate_limit_exceeded') return new AsrFailure(httpFailure(429));
+  return new AsrFailure({
+    kind: 'unknown',
+    scope: 'chunk',
+    message: '即時辨識服務回報錯誤，音訊已保留',
+  });
+}
+
 class AsrSession {
   ws: WebSocket;
   cache = new Map<string, TranscriptSegment>();
@@ -92,6 +119,7 @@ class AsrSession {
   ready: boolean;
   audioBytes: number;
   pendingCommits: number;
+  private coverage = new RealtimeCoverage();
 
   constructor(
     private config: AsrSettings,
@@ -120,20 +148,44 @@ class AsrSession {
         ? { ...(c.apiKey ? { Authorization: `Bearer ${c.apiKey}` } : {}), ...c.headers }
         : c.headers;
     this.ws = new WebSocket(url, { headers, handshakeTimeout: 15000, maxPayload: 2 * 1024 * 1024 });
+    this.ws.on('unexpected-response', (_request, response) => {
+      const value = response.headers['retry-after'];
+      const failure = httpFailure(
+        response.statusCode || 500,
+        retryAfter(typeof value === 'string' ? value : null, Date.now())
+      );
+      response.resume();
+      this.ws.emit('error', new AsrFailure(failure));
+      this.ws.terminate();
+    });
     this.ws.on('message', (raw) => {
       try {
         const data = JSON.parse(raw.toString());
+        this.coverage.receive(data);
         const seg = normalize(data, c, (Date.now() - this.started) / 1000, this.cache);
         if (seg?.final && c.provider === 'openai')
           this.pendingCommits = vllm ? 0 : Math.max(0, this.pendingCommits - 1);
-        if (seg) this.emit({ type: 'segment', segment: seg });
+        if (seg) {
+          const range = this.coverage.range(seg.id);
+          if (range) {
+            seg.start = range.start;
+            seg.end = range.end;
+            seg.timing = 'provider';
+          }
+          let coverage = seg.final ? this.coverage.finish(seg.id) : undefined;
+          if (seg.final && vllm && this.closed) coverage = this.coverage.all();
+          this.emit({ type: 'segment', segment: seg, coverage });
+          if (seg.final) this.cache.delete(seg.id);
+        }
       } catch (caughtE) {
         const e = caughtE instanceof Error ? caughtE : new Error(String(caughtE));
 
-        this.emit({ type: 'error', message: e.message });
+        this.emit({ type: 'error', message: e.message, failure: failureInfo(e) });
       }
     });
-    this.ws.on('error', (e) => this.emit({ type: 'error', message: e.message }));
+    this.ws.on('error', (e) =>
+      this.emit({ type: 'error', message: failureInfo(e).message, failure: failureInfo(e) })
+    );
     this.ws.on('close', () => {
       this.ready = false;
       this.emit({
@@ -167,8 +219,7 @@ class AsrSession {
             finish();
           }
           if (['session.updated', 'transcription_session.updated'].includes(data.type)) finish();
-          if (data.type === 'error')
-            finish(new Error(data.error?.message || data.message || 'ASR 初始化失敗'));
+          if (data.type === 'error') finish(protocolFailure(record(data)));
         } catch (caughtE) {
           const e = caughtE instanceof Error ? caughtE : new Error(String(caughtE));
 
@@ -177,7 +228,9 @@ class AsrSession {
       };
 
       const timer = setTimeout(() => {
-        finish(new Error('ASR 連線或初始化逾時'));
+        finish(
+          new AsrFailure({ kind: 'connection', scope: 'service', message: 'ASR 連線或初始化逾時' })
+        );
         this.ws.terminate();
       }, 20000);
       this.ws.once('error', failed);
@@ -223,6 +276,7 @@ class AsrSession {
     const c = this.config;
     const b = buffer instanceof ArrayBuffer ? Buffer.from(buffer) : Buffer.from(buffer);
     this.audioBytes += b.length;
+    this.coverage.audio(b.length, this.config.sampleRate || 24000);
     if (c.provider === 'openai')
       this.ws.send(
         JSON.stringify({ type: 'input_audio_buffer.append', audio: b.toString('base64') })
@@ -237,6 +291,17 @@ class AsrSession {
 
   commit() {
     if (this.config.realtimeFlavor === 'vllm' && this.config.provider === 'openai') return;
+    if (this.pendingCommits >= 64) {
+      this.emit({
+        type: 'error',
+        failure: {
+          kind: 'timeout',
+          scope: 'chunk',
+          message: '即時服務未完成已提交回合，將保留音訊並重新連線',
+        },
+      });
+      return;
+    }
     if (
       this.config.provider === 'openai' &&
       this.ready &&
@@ -244,6 +309,7 @@ class AsrSession {
       this.audioBytes >= 4800
     ) {
       this.ws.send(JSON.stringify({ type: 'input_audio_buffer.commit' }));
+      this.emit({ type: 'audio-committed', coverage: this.coverage.commit() });
       this.audioBytes = 0;
       this.pendingCommits++;
     }

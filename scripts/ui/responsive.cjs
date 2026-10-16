@@ -85,9 +85,9 @@ async function main() {
       .locator('#audio-device optgroup[label="麥克風"] option')
       .nth(1)
       .textContent();
-    const dropdown = page.getByRole('combobox', { name: /^裝置音量/ });
+    const dropdown = page.getByRole('combobox', { name: /^麥克風/ });
     await dropdown.click();
-    const search = page.getByRole('searchbox', { name: '搜尋裝置音量' });
+    const search = page.getByRole('searchbox', { name: '搜尋麥克風' });
     await search.fill(deviceLabel);
     assert(await page.getByRole('option', { name: deviceLabel, exact: true }).isVisible());
     await page.getByRole('option', { name: deviceLabel, exact: true }).click();
@@ -143,7 +143,7 @@ async function main() {
     await search.press('End');
     assert.equal(
       await page.locator('.dropdown-option.is-active').textContent(),
-      '系統音訊＋選定麥克風'
+      await page.locator('#audio-device option').last().textContent()
     );
     await search.press('Escape');
     await dropdown.waitFor();

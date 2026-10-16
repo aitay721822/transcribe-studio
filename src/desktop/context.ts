@@ -5,6 +5,7 @@ import type { Meeting, TranscriptSegment } from '../domain/models';
 import type { Agent } from '../harness/coordinator';
 import type { Store } from '../persistence/store';
 import type { ImageVault } from '../services/agents/conversation/images';
+import type { AsrTaskService } from '../services/asr/tasks';
 import type { createSettings } from './settings';
 
 export interface ActiveRecording {
@@ -25,6 +26,7 @@ export interface DesktopContext extends ReturnType<typeof createSettings> {
   dataDir: string;
   bundledSkills: string;
   asr: Map<string, SpeechSession>;
+  asrTasks: AsrTaskService;
   recordings: Map<string, ActiveRecording>;
   imports: Map<string, string>;
   rtcCaches: Map<string, Map<string, TranscriptSegment>>;

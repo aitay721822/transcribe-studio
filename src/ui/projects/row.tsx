@@ -24,7 +24,8 @@ export function ProjectSidebarRow({
   });
   const expanded = !archived && !(collapsed ?? p.id !== state.projectId);
   const childrenId = `project-meetings-${p.id}`;
-  const meetings = state.meetings.filter((m) => m.projectId === p.id).slice(0, 6);
+  const [visibleCount, setVisibleCount] = useState(5);
+  const meetings = state.meetings.filter((m) => m.projectId === p.id);
   return (
     <>
       <div className={`project-sidebar-row ${p.id === state.projectId ? 'selected' : ''}`}>
@@ -79,7 +80,7 @@ export function ProjectSidebarRow({
         >
           <div className="project-children-inner">
             <div className="project-sub">
-              {meetings.map((m) => (
+              {meetings.slice(0, visibleCount).map((m) => (
                 <button
                   className={
                     'meeting-link ' +
@@ -91,6 +92,15 @@ export function ProjectSidebarRow({
                   {m.title}
                 </button>
               ))}
+              {meetings.length > visibleCount && (
+                <button
+                  type="button"
+                  className="meeting-link"
+                  onClick={() => setVisibleCount((count) => count + 5)}
+                >
+                  顯示更多
+                </button>
+              )}
               {!meetings.length && <div className="meeting-link">尚無會議紀錄</div>}
             </div>
           </div>

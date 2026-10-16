@@ -4,10 +4,12 @@ import { VolumeMeter } from '../meter';
 export function AudioMeter({
   source,
   deviceId,
+  playbackId,
   ready,
 }: {
   source: string;
   deviceId: string;
+  playbackId?: string;
   ready: () => Promise<void>;
 }) {
   const bars = useRef<HTMLDivElement>(null);
@@ -22,7 +24,8 @@ export function AudioMeter({
         [...bars.current.querySelectorAll<HTMLElement>('.meter-bar')],
         (message) => {
           if (alive) setStatus(message);
-        }
+        },
+        playbackId
       )
       .then(() => {
         if (alive) void ready();
@@ -31,7 +34,7 @@ export function AudioMeter({
       alive = false;
       meter.stop();
     };
-  }, [source, deviceId]);
+  }, [source, deviceId, playbackId]);
   return (
     <>
       <div className="help">僅測試音量，不錄音、不連線 ASR。</div>

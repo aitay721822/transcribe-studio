@@ -42,8 +42,13 @@ export function sourceViews(context: PageContext) {
               {date(r.startedAt)}
               {!r.complete ? ' · 未完成／中斷' : ''}
             </div>
-            {r.complete ? (
+            {r.complete || m.status !== 'recording' ? (
               <>
+                {!r.complete && (
+                  <p className="help">
+                    上次錄音中斷，可嘗試播放已保存部分，或選擇範圍補辨識；未保存的尾端無法恢復。
+                  </p>
+                )}
                 <audio
                   className="audio-player"
                   data-audio-id={r.id}

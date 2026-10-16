@@ -1,3 +1,7 @@
+const path = require('node:path');
+const fs = require('node:fs/promises');
+const { chromium } = require('playwright');
+
 async function overview(page) {
   await page.locator('.setup-page, .hero').first().waitFor();
   if (await page.locator('.setup-page').count()) {
@@ -23,10 +27,50 @@ async function overview(page) {
 }
 
 async function desktopWindow(app) {
-  const page = await app.firstWindow();
-  await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(1280, 900));
-  await page.waitForFunction(() => innerWidth === 1280);
+  const page = await firstWindow(app);
+  await resizeWindow(app, page, 1280, 900);
   return page;
 }
 
-module.exports = { overview, desktopWindow };
+async function resizeWindow(app, page, width, height) {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await app.evaluate(
+      ({ BrowserWindow }, size) => {
+        const win = BrowserWindow.getAllWindows()[0];
+        if (win.isMinimized()) win.restore();
+        if (win.isMaximized()) win.unmaximize();
+        win.setSize(size.width, size.height);
+      },
+      { width, height }
+    );
+    try {
+      await page.waitForFunction((value) => innerWidth === value, width, { timeout: 5000 });
+      return;
+    } catch (error) {
+      if (attempt === 1) throw error;
+    }
+  }
+}
+
+async function firstWindow(app) {
+  try {
+    return await app.firstWindow({ timeout: 3000 });
+  } catch (error) {
+    // Packaged Electron may open before the automation client's window subscription.
+    // Reattach to the same running browser, retaining real renderer and UI assertions.
+    const directory = await app.evaluate(({ app }) => app.getPath('userData'));
+    const [port, endpoint] = (await fs.readFile(path.join(directory, 'DevToolsActivePort'), 'utf8'))
+      .trim()
+      .split(/\r?\n/);
+    if (!/^\d+$/.test(port) || !endpoint?.startsWith('/devtools/browser/')) throw error;
+    const browser = await chromium.connectOverCDP(`ws://127.0.0.1:${port}${endpoint}`);
+    app.once('close', () => {
+      void browser.close().catch(() => {});
+    });
+    const context = browser.contexts()[0];
+    if (!context) throw error;
+    return context.pages()[0] || (await context.waitForEvent('page'));
+  }
+}
+
+module.exports = { overview, desktopWindow, resizeWindow, firstWindow };

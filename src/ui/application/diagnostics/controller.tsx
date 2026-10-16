@@ -93,8 +93,9 @@ export function createDiagnosticController(host: UiRuntime) {
           <SpeechTestPanel
             settings={structuredClone(settings)}
             initialMicrophone={host.state.microphoneId || ''}
+            initialPlayback={host.state.playbackId || ''}
             initialDevice={
-              ['system', 'both'].includes(host.state.source)
+              ['system', 'both', 'none'].includes(host.state.source)
                 ? host.state.source
                 : `mic:${host.state.microphoneId || ''}`
             }

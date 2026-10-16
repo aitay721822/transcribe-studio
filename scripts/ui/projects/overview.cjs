@@ -30,6 +30,9 @@ async function main() {
         first.version
       );
       await window.studio.invoke('meeting:create', p.id, '客戶需求訪談', 'file');
+      for (let index = 0; index < 10; index += 1) {
+        await window.studio.invoke('meeting:create', p.id, `分頁會議 ${index}`, 'live');
+      }
       await window.studio.invoke('meeting:create', other.id, '其他專案的會議', 'live');
       await window.studio.invoke('settings:save', { theme: 'dark' });
       return { id: p.id, otherId: other.id };
@@ -39,15 +42,30 @@ async function main() {
     await page.locator(`[data-project="${fixture.id}"]`).click();
     await page.getByRole('heading', { name: '總覽', exact: true }).waitFor();
     assert.deepEqual(await page.locator('.project-overview-stat strong').allTextContents(), [
-      '2',
+      '12',
       '0',
       '1',
       '0',
     ]);
-    assert.equal(await page.locator('.project-overview .meeting-row').count(), 2);
+    const rows = page.locator('.project-overview .meeting-row');
+    const more = page.locator('.project-overview').getByRole('button', { name: '顯示更多' });
+    assert.equal(await rows.count(), 5);
+    await more.click();
+    assert.equal(await rows.count(), 10);
+    await more.click();
+    assert.equal(await rows.count(), 12);
+    assert.equal(await more.count(), 0);
     assert.equal(await page.locator('.project-overview').getByText('其他專案的會議').count(), 0);
     const toggle = page.locator(`[data-project-toggle="${fixture.id}"]`);
     const children = page.locator(`#project-meetings-${fixture.id}`);
+    const sidebarMeetings = children.locator('[data-meeting]');
+    const sidebarMore = children.getByRole('button', { name: '顯示更多' });
+    assert.equal(await sidebarMeetings.count(), 5);
+    await sidebarMore.click();
+    assert.equal(await sidebarMeetings.count(), 10);
+    await sidebarMore.click();
+    assert.equal(await sidebarMeetings.count(), 12);
+    assert.equal(await sidebarMore.count(), 0);
     assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
     await toggle.click();
     assert.equal(await toggle.getAttribute('aria-expanded'), 'false');

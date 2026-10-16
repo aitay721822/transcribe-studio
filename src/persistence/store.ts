@@ -17,6 +17,7 @@ import type {
   Settings,
   TranscriptSegment,
 } from '../domain/models';
+import { AsrRepository } from './asr/repository';
 import { ConversationRepository } from './conversations';
 
 export const DEFAULTS: Settings = {
@@ -76,6 +77,7 @@ export interface Revision {
 }
 type Tables = { projects: Project; meetings: Meeting; revisions: Revision; runs: AgentRun };
 export class Store {
+  readonly transcriptions: AsrRepository;
   readonly conversations: ConversationRepository;
   private db: DatabaseSync;
 
@@ -92,6 +94,7 @@ export class Store {
       CREATE TABLE IF NOT EXISTS revisions(id TEXT PRIMARY KEY, meeting_id TEXT NOT NULL REFERENCES meetings(id), data TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS settings(id INTEGER PRIMARY KEY, data TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS runs(id TEXT PRIMARY KEY, meeting_id TEXT NOT NULL, data TEXT NOT NULL);`);
+    this.transcriptions = new AsrRepository(this.db);
     // Idempotent migration: durable JSONL append completes before clearing legacy columns.
     for (const row of this.db.prepare('SELECT data FROM meetings').all()) {
       const meeting: Meeting = JSON.parse(String(row.data));
@@ -304,6 +307,7 @@ export class Store {
     if (i >= 0 && m.segments[i].final && !seg.final) return m;
     if (i >= 0) m.segments[i] = { ...m.segments[i], ...seg };
     else m.segments.push(seg);
+    m.segments.sort((a, b) => a.start - b.start || a.end - b.end || a.id.localeCompare(b.id));
     m.updatedAt = new Date().toISOString();
     this.putMeeting(m);
     return m;
@@ -353,6 +357,7 @@ export class Store {
   }
 
   recover() {
+    this.transcriptions.recover();
     for (const m of this.meetings())
       if (['recording', 'transcribing'].includes(m.status))
         this.updateMeeting(m.id, { status: 'interrupted' });

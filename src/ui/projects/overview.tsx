@@ -1,14 +1,20 @@
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import type { Meeting, Project, UiState } from '../../domain/models';
 import { shortcutLabel } from '../application/platform/shortcuts';
+import { TaskPanel } from '../audio/tasks/panel';
 import { icon } from '../components/icons';
 import { Button } from '../primitives/button';
 
-export function projectOverview(
-  project: Project,
-  state: UiState,
-  table: (meetings: Meeting[]) => ReactNode
-) {
+export function ProjectOverview({
+  project,
+  state,
+  table,
+}: {
+  project: Project;
+  state: UiState;
+  table: (meetings: Meeting[]) => ReactNode;
+}) {
+  const [visibleCount, setVisibleCount] = useState(5);
   const meetings = state.meetings
     .filter((meeting) => meeting.projectId === project.id)
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
@@ -63,12 +69,24 @@ export function projectOverview(
         <span className="help">{meetings.length} 場 · 此專案</span>
       </div>
       {meetings.length ? (
-        table(meetings)
+        <>
+          {table(meetings.slice(0, visibleCount))}
+          {meetings.length > visibleCount && (
+            <Button
+              variant="ghost"
+              className="btn text small"
+              onClick={() => setVisibleCount((count) => count + 5)}
+            >
+              顯示更多
+            </Button>
+          )}
+        </>
       ) : (
         <div className="project-meetings-empty">
           尚無會議。從「即時會議」開始錄音，或選擇「音檔辨識」匯入錄音。
         </div>
       )}
+      <TaskPanel key={project.id} state={state} projectId={project.id} />
     </section>
   );
 }

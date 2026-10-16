@@ -1,5 +1,6 @@
 import type { HTMLAttributes } from 'react';
 import { rebaseAnnotations } from '../../domain/annotations';
+import { RecordingTaskDialog } from '../audio/tasks/recording-dialog';
 import { closeDropdown } from '../components/dropdown';
 import { invalidateUI } from '../layout/roots';
 import { FilePreview } from '../projects/files/preview';
@@ -41,10 +42,10 @@ export function applicationEvents(
     else if (d.audioMode) {
       state.audioSourceMode = d.audioMode as 'device' | 'file';
       render();
-    } else if (d.project) {
+    } else if (d.project || d.taskProject) {
       if (state.runId && !state.temporaryChat) throw new Error('請先完成或停止目前的 Agent 工作');
       await workspace.saveNotes();
-      state.projectId = d.project;
+      state.projectId = d.project || d.taskProject || null;
       state.meetingId = null;
       await workspace.navigate('project');
     } else if (d.projectMenu !== undefined) {
@@ -106,19 +107,21 @@ export function applicationEvents(
       );
     } else if (d.seek) await audio.seekAudio(Number(d.seek), d.recording);
     else if (d.retranscribe) {
-      (b as HTMLButtonElement).disabled = true;
-      toast('正在補辨識錄音…');
-      try {
-        updateMeeting(
-          await api('recording:transcribe', state.meetingId, d.retranscribe, {
-            denoise: state.audioDenoise !== false,
-          })
-        );
-        render();
-        toast('補辨識完成');
-      } finally {
-        (b as HTMLButtonElement).disabled = false;
-      }
+      const target = d.recoveryMeeting ? await api('meeting:get', d.recoveryMeeting) : current();
+      const modal = showModal(
+        '建立會後補辨識任務',
+        <RecordingTaskDialog
+          meeting={target}
+          recordingId={d.retranscribe}
+          denoise={state.audioDenoise !== false}
+          queued={(meeting) => {
+            updateMeeting(meeting);
+            modal.close();
+            render();
+            toast('已加入補辨識任務，可在辨識任務面板管理');
+          }}
+        />
+      );
     } else if (d.cancelInput) {
       const item = state.agentQueue?.find((entry) => entry.id === d.cancelInput);
       await api('agent:cancel', d.cancelInput);
@@ -134,14 +137,6 @@ export function applicationEvents(
   const change = safe(async (event: React.FormEvent<HTMLDivElement>) => {
     const input = event.target as HTMLInputElement;
     switch (input.id) {
-      case 'audio-device': {
-        const value = input.value;
-        state.source = ['system', 'both'].includes(value) ? value : 'mic';
-        if (value.startsWith('mic:')) state.microphoneId = value.slice(4);
-        localStorage.setItem('studio.microphone', state.microphoneId);
-        render();
-        break;
-      }
       case 'llm-backend':
       case 'codex-auth':
       case 'claude-auth':

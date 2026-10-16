@@ -1,4 +1,5 @@
 import type { AsrSettings } from '../domain/asr/config';
+import { AsrFailure, httpFailure, retryAfter } from '../domain/asr/retry';
 
 export async function signalOffer(
   config: AsrSettings,
@@ -20,7 +21,12 @@ export async function signalOffer(
         ? offer
         : JSON.stringify({ type: 'offer', sdp: offer, ...config.init }),
   });
-  if (!response.ok) throw new Error(`WebRTC signaling 失敗 (${response.status})`);
+  if (!response.ok) {
+    await response.body?.cancel();
+    throw new AsrFailure(
+      httpFailure(response.status, retryAfter(response.headers.get('Retry-After'), Date.now()))
+    );
+  }
   const result =
     config.signalingMode === 'sdp' ? { sdp: await response.text() } : await response.json();
   if (typeof result.sdp !== 'string' || result.sdp.length > 100000)

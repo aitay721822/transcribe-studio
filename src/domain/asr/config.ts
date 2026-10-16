@@ -1,4 +1,5 @@
 import type { TranscriptSegment } from '../models';
+import type { FailureInfo } from './retry';
 
 export interface AsrSettings {
   provider: string;
@@ -32,6 +33,9 @@ export interface AsrEvent {
   level?: number;
   asr?: boolean;
   paused?: boolean;
+  failure?: FailureInfo;
+  coverage?: { start: number; end: number };
+  epoch?: number;
 }
 export interface SpeechSession {
   connect(): Promise<void>;

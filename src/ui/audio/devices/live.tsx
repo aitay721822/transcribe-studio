@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { selectedSource } from '../../../domain/audio-devices';
 import type { UiState } from '../../../domain/models';
 import { invalidateUI } from '../../layout/roots';
 import { Button } from '../../primitives/button';
@@ -8,6 +9,21 @@ import { DeviceDetails, DevicePicker } from './picker';
 export function LiveDevicePicker({ state, busy }: { state: UiState; busy: boolean }) {
   const { devices, loading, error, refresh } = useInputDevices(busy, state.inputDevices);
   const value = state.source === 'mic' ? `mic:${state.microphoneId || ''}` : state.source;
+  const playback = ['system', 'both'].includes(state.source) ? state.playbackId || '' : 'none';
+  const microphone = ['system', 'none'].includes(state.source)
+    ? 'none'
+    : `mic:${state.microphoneId || ''}`;
+
+  function select(nextPlayback: string, nextMicrophone: string) {
+    state.source = selectedSource(nextPlayback, nextMicrophone);
+    if (nextPlayback !== 'none') state.playbackId = nextPlayback;
+    if (nextMicrophone !== 'none') state.microphoneId = nextMicrophone.slice(4);
+    localStorage.setItem('studio.source', state.source);
+    localStorage.setItem('studio.playback', state.playbackId || '');
+    localStorage.setItem('studio.microphone', state.microphoneId || '');
+    invalidateUI();
+  }
+
   useEffect(() => {
     state.inputDevices = devices;
   }, [devices, state]);
@@ -26,12 +42,20 @@ export function LiveDevicePicker({ state, busy }: { state: UiState; busy: boolea
   }, [devices, loading, busy, error, state]);
   return (
     <div className="field">
-      <label htmlFor="audio-device">裝置音量</label>
       <div className="device-picker">
         <DevicePicker
           id="audio-device"
           devices={devices}
-          value={value}
+          value={microphone}
+          playback={playback}
+          onChange={(event) => {
+            event.stopPropagation();
+            select(playback, event.target.value);
+          }}
+          onPlaybackChange={(event) => {
+            event.stopPropagation();
+            select(event.target.value, microphone);
+          }}
           disabled={loading || busy}
         />
         <Button

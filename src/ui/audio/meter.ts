@@ -11,13 +11,22 @@ export class VolumeMeter {
     source: string,
     deviceId: string,
     bars: HTMLElement[],
-    status: (message: string) => void
+    status: (message: string) => void,
+    playbackId = ''
   ): Promise<void> {
     try {
-      this.streams = await openAudioSources(source, deviceId);
+      this.streams = await openAudioSources(source, deviceId, playbackId);
       if (this.stopped) {
         this.stop();
         return;
+      }
+      for (const stream of this.streams) {
+        for (const track of stream.getAudioTracks()) {
+          track.onended = () => {
+            this.stop();
+            status('所選音訊裝置已中斷，請重新選擇裝置');
+          };
+        }
       }
       this.context = new AudioContext();
       const analyser = this.context.createAnalyser();

@@ -15,6 +15,7 @@ export function createAudioController(
   const { createProject } = projects;
 
   async function newMeeting() {
+    if (state.source === 'none') throw new Error('請至少選擇一個播放裝置或麥克風');
     if (host.capture.active || host.capture.starting) {
       await openMeeting(host.capture.id);
       toast('請先結束目前的錄音');
@@ -55,7 +56,8 @@ export function createAudioController(
       state.recordOnly,
       state.settings.asr,
       m.duration,
-      state.microphoneId
+      state.microphoneId,
+      state.playbackId
     );
     updateMeeting(await api('meeting:get', m.id));
     render();
@@ -63,9 +65,13 @@ export function createAudioController(
 
   async function stopRecording() {
     await saveNotes();
-    const m = await host.capture.stop();
-    if (m) updateMeeting(m);
-    render();
+    try {
+      const m = await host.capture.stop();
+      if (m) updateMeeting(m);
+    } finally {
+      if (host.capture.id) updateMeeting(await api('meeting:get', host.capture.id));
+      render();
+    }
     toast('錄音已儲存');
   }
 
@@ -76,6 +82,7 @@ export function createAudioController(
       <AudioMeter
         source={state.source}
         deviceId={state.microphoneId}
+        playbackId={state.playbackId}
         ready={() => refreshAudioDevices()}
       />
     );
@@ -102,7 +109,7 @@ export function createAudioController(
       toast('此片段沒有可播放的音訊');
       return;
     }
-    if (!record.complete) {
+    if (!record.complete && m.status === 'recording') {
       toast('錄音完成後即可播放此片段');
       return;
     }
@@ -138,7 +145,7 @@ export function createAudioController(
       toast(`正在處理 ${f.name}`);
       try {
         updateMeeting(await api('file:transcribe', projectId, f.id, { denoise }));
-        toast(`${f.name} 已完成`);
+        toast(`${f.name} 已加入辨識任務`);
       } catch (caughtE) {
         const e = caughtE instanceof Error ? caughtE : new Error(String(caughtE));
 

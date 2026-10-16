@@ -115,8 +115,8 @@ async function main() {
         window.deviceStreams.every((s) => s.getTracks().every((t) => t.readyState === 'ended'))
       )
     );
-    await page.getByRole('combobox', { name: /^測試音訊裝置/ }).click();
-    await page.getByRole('searchbox', { name: '搜尋測試音訊裝置' }).fill('WH-1000XM5');
+    await page.getByRole('combobox', { name: /^麥克風/ }).click();
+    await page.getByRole('searchbox', { name: '搜尋麥克風' }).fill('WH-1000XM5');
     assert(await page.getByRole('option', { name: bluetooth, exact: true }).isVisible());
     assert(
       await page
@@ -202,12 +202,12 @@ async function main() {
     await page.waitForFunction(() => document.querySelector('#audio-device')?.disabled === false);
     await page.locator('#audio-device').selectOption('mic:rode');
     assert.match(await page.locator('.device-details').textContent(), /RØDE NT-USB Mini/);
-    await page.getByRole('combobox', { name: /^裝置音量/ }).click();
+    await page.getByRole('combobox', { name: /^麥克風/ }).click();
     await fs.mkdir('output/playwright', { recursive: true });
     await page.screenshot({ path: 'output/playwright/device-models.png' });
     await page.keyboard.press('Escape');
     await page.setViewportSize({ width: 480, height: 820 });
-    await page.getByRole('combobox', { name: /^裝置音量/ }).click();
+    await page.getByRole('combobox', { name: /^麥克風/ }).click();
     assert(await page.getByRole('option', { name: rode, exact: true }).isVisible());
     assert(
       await page.locator('.device-options').evaluate((e) => {

@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { BrowserWindow, clipboard, desktopCapturer, dialog, session } from 'electron';
 import type { DesktopContext } from './context';
+import { registerPlayback } from './platform/audio/playback';
 import { mediaAccess } from './platform/media';
 import { installPlatformMenu } from './platform/menu';
 
@@ -74,6 +75,7 @@ export function createWindow(preload: string) {
 }
 
 export function registerWindow(ctx: DesktopContext) {
+  registerPlayback(ctx);
   const { handle, win, recordings } = ctx;
   handle('media:status', mediaAccess.status);
   handle('media:prepare', mediaAccess.prepare);

@@ -52,8 +52,7 @@ export function registerProjects(ctx: DesktopContext) {
     const ids = meetings.map((m) => m.id);
     if (
       [...ctx.recordings.values()].some((r) => ids.includes(r.meetingId)) ||
-      ids.some((mid) => ctx.agent.isRunningMeeting(mid)) ||
-      meetings.some((m) => m.status === 'transcribing')
+      ids.some((mid) => ctx.agent.isRunningMeeting(mid))
     )
       throw new Error('請先結束此專案的錄音、辨識與 Agent 工作');
   };
@@ -65,7 +64,14 @@ export function registerProjects(ctx: DesktopContext) {
   });
   handle('project:delete', async (id) => {
     ensureIdle(id);
-    return removeProject(store, ctx.dataDir, id);
+    const meetings = store.meetings().filter((meeting) => meeting.projectId === id);
+    try {
+      for (const meeting of meetings) await ctx.asrTasks.prepareDeletion(meeting.id);
+      ensureIdle(id);
+      return await removeProject(store, ctx.dataDir, id);
+    } finally {
+      for (const meeting of meetings) ctx.asrTasks.endDeletion(meeting.id);
+    }
   });
   handle('project:rename', (id, name) =>
     store.updateProject(id, { name: String(name).trim().slice(0, 120) })

@@ -25,9 +25,9 @@ export class SpeechConnectionTest {
     private event: (event: ConnectionEvent) => void
   ) {}
 
-  async start(settings: Settings, source: string, device: string) {
+  async start(settings: Settings, source: string, device: string, playbackId = '') {
     try {
-      this.streams = await openAudioSources(source, device);
+      this.streams = await openAudioSources(source, device, playbackId);
       this.controller.signal.throwIfAborted();
       const track = this.streams.at(-1)?.getAudioTracks()[0];
       if (source !== 'system' && track)
