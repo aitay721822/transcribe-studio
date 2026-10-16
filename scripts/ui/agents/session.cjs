@@ -138,6 +138,15 @@ async function main() {
     await input.press('Enter');
     await page.locator('[data-action="cancel-agent"]').waitFor();
     await until(() => gates.length > 0);
+    await permissions();
+    const temporaryCheckbox = page.getByRole('checkbox', { name: '暫時對話', exact: true });
+    assert.equal(await temporaryCheckbox.isDisabled(), true);
+    assert.equal(await temporaryCheckbox.isChecked(), true);
+    assert.equal(
+      await temporaryCheckbox.evaluate((element) => getComputedStyle(element).opacity),
+      '0.5'
+    );
+    await page.keyboard.press('Escape');
     await page.locator(`[data-project="${project.id}"]`).first().click();
     await page.locator('.agent-input-wrap.is-temporary').waitFor({ state: 'hidden' });
     gates.splice(0).forEach((release) => release());

@@ -1,4 +1,5 @@
 import type { AgentEvent } from '../../../domain/models';
+import { Disclosure, DisclosureTrigger } from '../../primitives/disclosure';
 
 export function CompactionStatus({ event }: { event: AgentEvent }) {
   const sizes = event.args as { beforeChars?: number; afterChars?: number };
@@ -14,11 +15,11 @@ export function CompactionStatus({ event }: { event: AgentEvent }) {
   };
 
   return (
-    <details className={`compaction-card ${event.status || ''}`}>
-      <summary>
+    <Disclosure className={`compaction-card ${event.status || ''}`}>
+      <DisclosureTrigger>
         {compactionIndicator()}
         {event.message}
-      </summary>
+      </DisclosureTrigger>
       {sizes?.beforeChars != null && (
         <p>
           {sizes.beforeChars.toLocaleString()} 字元
@@ -38,6 +39,6 @@ export function CompactionStatus({ event }: { event: AgentEvent }) {
           2
         )}
       </pre>
-    </details>
+    </Disclosure>
   );
 }

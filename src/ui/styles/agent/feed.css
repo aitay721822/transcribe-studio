@@ -160,13 +160,6 @@
 .agent-tool-trace[open] summary {
   border-bottom: 1px solid var(--line);
 }
-.agent-tool-trace summary::before {
-  content: "＋";
-  color: var(--accent);
-}
-.agent-tool-trace[open] summary::before {
-  content: "−";
-}
 .agent-tool-trace[data-status="失敗"] .agent-tool-state {
   color: var(--error);
 }

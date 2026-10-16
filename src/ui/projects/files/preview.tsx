@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FilePage, WorkspaceOptions } from '../../../domain/workspace';
+import { Button } from '../../primitives/button';
 
 export type { FilePage } from '../../../domain/workspace';
 
@@ -56,20 +57,24 @@ export function FilePreview({
   return (
     <section aria-label="分段檔案預覽">
       <div className="button-row">
-        <button
+        <Button
+          variant="ghost"
+          size="bare"
           className="btn text small"
           disabled={busy || !history.length}
           onClick={() => void load(history.at(-1), history.slice(0, -1), page.version)}
         >
           上一段
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
+          size="bare"
           className="btn text small"
           disabled={busy || !page || page.nextOffset === null}
           onClick={() => void load(page.nextOffset, [...history, page.offset], page.version)}
         >
           下一段
-        </button>
+        </Button>
         <span className="help" role="status">
           {pageStatus()}
         </span>
@@ -77,9 +82,14 @@ export function FilePreview({
       {error && (
         <p role="alert">
           {error}{' '}
-          <button className="btn text small" onClick={() => void load(0, [])}>
+          <Button
+            variant="ghost"
+            size="bare"
+            className="btn text small"
+            onClick={() => void load(0, [])}
+          >
             重新讀取
-          </button>
+          </Button>
         </p>
       )}
       <pre id="project-file-preview" className="code-field" hidden={!page}>

@@ -1,6 +1,7 @@
 import { Popover } from 'radix-ui';
 import { useRef, useState } from 'react';
 import type { Meeting } from '../../../domain/models';
+import { Button } from '../../primitives/button';
 
 const time = (value: number) => {
   const seconds = Math.max(0, Math.floor(value || 0));
@@ -42,14 +43,16 @@ export function SourceCitation({
     >
       <Popover.Root open={open} onOpenChange={setOpen}>
         <Popover.Trigger asChild>
-          <button
+          <Button
+            variant="ghost"
+            size="bare"
             type="button"
             className="source-citation"
             data-citation={id}
             aria-label={`查看來源：${label}`}
           >
             {label}
-          </button>
+          </Button>
         </Popover.Trigger>
         <Popover.Portal container={anchor.current?.closest('dialog') || undefined}>
           <Popover.Content

@@ -2,6 +2,7 @@ import { type ReactNode, useEffect, useRef, useState } from 'react';
 import type { Reference } from '../../domain/models';
 import type { WorkspaceOptions } from '../../domain/workspace';
 import { icon } from '../components/icons';
+import { Button } from '../primitives/button';
 import { Input } from '../primitives/input';
 import { type FilePage, FilePreview } from './files/preview';
 
@@ -98,14 +99,18 @@ function ProjectFiles({ options }: { options: Options }) {
         {status}
       </p>
       <div className="button-row">
-        <button
+        <Button
+          variant="ghost"
+          size="bare"
           className="btn text small"
           disabled={busy || !cursor}
           onClick={() => void load(cursor)}
         >
           下一批檔案
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
+          size="bare"
           className="btn text small"
           disabled={busy}
           onClick={() => {
@@ -114,16 +119,16 @@ function ProjectFiles({ options }: { options: Options }) {
           }}
         >
           重新掃描
-        </button>
+        </Button>
       </div>
       <div id="project-files">
         {files.map((f, i) => (
           <div className="file-list-item" key={`${f.rootId}:${f.relative}`}>
             {icon('file')}
             <div>
-              <button data-file-index={i} onClick={() => setFile(f)}>
+              <Button variant="ghost" size="bare" data-file-index={i} onClick={() => setFile(f)}>
                 {f.relative}
-              </button>
+              </Button>
               <small>{f.rootName}</small>
             </div>
           </div>

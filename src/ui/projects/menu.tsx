@@ -2,6 +2,7 @@ import { Fragment, type ReactNode, useLayoutEffect, useRef, useState } from 'rea
 import type { Project } from '../../domain/models';
 import { icon } from '../components/icons';
 import { mountOverlay } from '../layout/overlays';
+import { Button } from '../primitives/button';
 
 export type ProjectCommand =
   | 'pin'
@@ -131,7 +132,9 @@ function ProjectMenu({
     value = '',
     end: ReactNode = null
   ) => (
-    <button
+    <Button
+      variant="ghost"
+      size="bare"
       type="button"
       role="menuitem"
       data-command={command}
@@ -143,7 +146,7 @@ function ProjectMenu({
       {icon(glyph)}
       <span>{label}</span>
       {end}
-    </button>
+    </Button>
   );
 
   const separator = <div role="separator" />;

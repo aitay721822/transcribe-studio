@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { Button } from '../../../primitives/button';
 import { currentPlatform, shortcutLabel } from '../../platform/shortcuts';
 import { selectedRect, visibleRect } from './geometry';
 
@@ -85,7 +86,9 @@ export function SelectionToolbar({ meetingId, tab }: { meetingId: string; tab: s
   }, [meetingId, tab]);
   return position
     ? createPortal(
-        <button
+        <Button
+          variant="ghost"
+          size="bare"
           ref={button}
           className="selection-toolbar"
           data-action="add-annotation"
@@ -97,7 +100,7 @@ export function SelectionToolbar({ meetingId, tab }: { meetingId: string; tab: s
           aria-keyshortcuts={currentPlatform() === 'darwin' ? 'Meta+Shift+M' : 'Control+Alt+M'}
         >
           標記選取文字 <kbd>{shortcutLabel('M', true)}</kbd>
-        </button>,
+        </Button>,
         document.body
       )
     : null;

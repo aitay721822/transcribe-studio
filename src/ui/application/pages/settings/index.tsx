@@ -1,4 +1,5 @@
 import { btn } from '../../../components/display';
+import { Button } from '../../../primitives/button';
 import type { PageContext } from '../contracts';
 import { agentSettings } from './agent';
 import { asrSettings } from './asr';
@@ -25,14 +26,16 @@ export function settingsViews(context: PageContext) {
               ['mcp', 'MCP 與 Skills'],
               ['appearance', '外觀'],
             ].map(([tab, label], __index) => (
-              <button
+              <Button
+                variant="ghost"
+                size="bare"
                 data-settings-tab={tab}
                 className={state.settingsTab === tab ? 'active' : ''}
                 aria-current={state.settingsTab === tab ? 'page' : undefined}
                 key={tab}
               >
                 {label}
-              </button>
+              </Button>
             ))}
           </nav>
           <div className="settings-content">

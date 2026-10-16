@@ -4,6 +4,9 @@
 @import "./foundation/reset.css";
 @import "./surfaces/chrome.css";
 @import "./foundation/controls.css";
+@import "./foundation/checkbox.css";
+@import "./foundation/widgets.css";
+@import "./connections/player.css";
 @import "./surfaces/pages.css";
 @import "./surfaces/audio.css";
 @import "./workspace/panes.css";

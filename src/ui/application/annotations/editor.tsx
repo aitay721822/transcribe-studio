@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import type { Meeting, UiState } from '../../../domain/models';
 import { btn, empty } from '../../components/display';
 import { invalidateUI } from '../../layout/roots';
+import { Button } from '../../primitives/button';
 import { Textarea } from '../../primitives/textarea';
 import { shortcutLabel } from '../platform/shortcuts';
 import { markdown, markedText } from './markdown';
@@ -70,18 +71,22 @@ export function NotesPane({ meeting: m, state }: { meeting: Meeting; state: UiSt
     <section className="workspace-pane notes-pane" aria-label="會議紀錄">
       <SelectionToolbar meetingId={m.id} tab={state.editorTab} />
       <div className="tabs">
-        <button
+        <Button
+          variant="ghost"
+          size="bare"
           className={`tab ${state.editorTab === 'edit' ? 'active' : ''}`}
           data-editor-tab="edit"
         >
           編輯
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="ghost"
+          size="bare"
           className={`tab ${state.editorTab === 'preview' ? 'active' : ''}`}
           data-editor-tab="preview"
         >
           預覽
-        </button>
+        </Button>
         <div className="notes-save">{btn('儲存', 'save-notes', 'check', 'small text')}</div>
       </div>
       <div className="editor-meta">
@@ -122,9 +127,14 @@ export function NotesPane({ meeting: m, state }: { meeting: Meeting; state: UiSt
         <section className="note-annotations" aria-label="Markdown 標記">
           <div className="annotation-heading">
             <span>標記 · {pending.length} 則待修訂</span>
-            <button data-action="revise-annotations" disabled={!pending.length}>
+            <Button
+              variant="ghost"
+              size="bare"
+              data-action="revise-annotations"
+              disabled={!pending.length}
+            >
               加入訊息框
-            </button>
+            </Button>
           </div>
           {saved.map((a, i) => {
             const annotationStatus = () => {
@@ -144,7 +154,9 @@ export function NotesPane({ meeting: m, state }: { meeting: Meeting; state: UiSt
                 data-annotation-id={a.id}
               >
                 <div className="annotation-heading">
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="bare"
                     className="annotation-locate"
                     disabled={a.status !== 'pending'}
                     onClick={() => {
@@ -159,14 +171,19 @@ export function NotesPane({ meeting: m, state }: { meeting: Meeting; state: UiSt
                     }}
                   >
                     #{i + 1} · {annotationStatus()}
-                  </button>
+                  </Button>
                   <div className="button-row">
-                    <button data-annotation-edit={a.id}>
+                    <Button variant="ghost" size="bare" data-annotation-edit={a.id}>
                       {a.status !== 'pending' ? '重新標記' : '編輯'}
-                    </button>
-                    <button data-annotation-remove={a.id} aria-label={`移除標記 ${i + 1}`}>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="bare"
+                      data-annotation-remove={a.id}
+                      aria-label={`移除標記 ${i + 1}`}
+                    >
                       移除
-                    </button>
+                    </Button>
                   </div>
                 </div>
                 <blockquote>{a.quote}</blockquote>

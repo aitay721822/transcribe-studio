@@ -1,4 +1,5 @@
 import type { Meeting } from '../../../../domain/models';
+import { RecordingPlayer } from '../../../audio/player/player';
 import { DenoiseOption } from '../../../audio/processing/progress';
 import { date, duration, empty } from '../../../components/display';
 import { icon } from '../../../components/icons';
@@ -15,14 +16,16 @@ export function sourceViews(context: PageContext) {
     return m.segments.map((s, __index) => (
       <article className={`segment ${s.final ? '' : 'partial'}`} key={s.id}>
         <div className="segment-meta">
-          <button
+          <Button
+            variant="ghost"
+            size="bare"
             className="segment-time"
             data-seek={s.start}
             data-recording={s.recordingId || ''}
             title="定位音訊"
           >
             {duration(s.start)}
-          </button>
+          </Button>
           <span>{s.speaker || '未標示講者'}</span>
           <span title={s.timing === 'provider' ? '服務提供的時間戳' : '此時間為接收時間或概略時間'}>
             {s.timing === 'provider' ? '' : '≈'}
@@ -49,13 +52,7 @@ export function sourceViews(context: PageContext) {
                     上次錄音中斷，可嘗試播放已保存部分，或選擇範圍補辨識；未保存的尾端無法恢復。
                   </p>
                 )}
-                <audio
-                  className="audio-player"
-                  data-audio-id={r.id}
-                  controls
-                  preload="metadata"
-                  src={r.url}
-                />
+                <RecordingPlayer recordingId={r.id} src={r.url} seconds={r.duration} />
                 <DenoiseOption state={state} />
                 <Button
                   variant="outline"

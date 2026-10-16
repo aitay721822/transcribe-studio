@@ -1,6 +1,8 @@
 import type { AsrTask, TaskAction, TaskSource, TaskState } from '../../../domain/asr/tasks';
 import { duration } from '../../components/display';
 import { Button } from '../../primitives/button';
+import { Checkbox } from '../../primitives/checkbox';
+import { Progress } from '../../primitives/progress';
 import { TaskRanges } from './ranges';
 
 export const taskLabels: Record<TaskState, string> = {
@@ -62,15 +64,20 @@ export function TaskCard({
       data-stage={progressStage(task)}
     >
       <div className="asr-task-title">
-        <input
-          type="checkbox"
+        <Checkbox
           aria-label={`選取任務 ${task.title}`}
           checked={selected}
-          onChange={(event) => select(event.target.checked)}
+          disabled={busy}
+          onCheckedChange={(checked) => select(checked === true)}
         />
-        <button className="asr-task-meeting" data-meeting={task.meetingId}>
+        <Button
+          variant="ghost"
+          size="bare"
+          className="asr-task-meeting"
+          data-meeting={task.meetingId}
+        >
           {task.title}
-        </button>
+        </Button>
         <span className="asr-task-state" data-state={task.state}>
           {taskLabels[task.state]}
         </span>
@@ -81,7 +88,7 @@ export function TaskCard({
           ` · ${task.denoise ? '已啟用降噪' : '略過降噪'}`}
       </p>
       {!terminal && task.totalChunks > 0 && (
-        <progress
+        <Progress
           aria-label="辨識分段完成進度"
           value={task.completedChunks}
           max={task.totalChunks}

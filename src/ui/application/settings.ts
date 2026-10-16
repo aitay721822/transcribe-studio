@@ -1,6 +1,7 @@
 import { compressionSettings } from '../../domain/agents/compression';
 import { executionLimits } from '../../domain/agents/limits';
 import type { LlmSettings } from '../../domain/models';
+import { checkboxChecked } from '../primitives/checkbox';
 import { $, type UiRuntime } from './runtime';
 
 export function createSettingsController(host: UiRuntime) {
@@ -24,7 +25,7 @@ export function createSettingsController(host: UiRuntime) {
     if (state.settingsTab === 'asr')
       s.asr = {
         ...s.asr,
-        provider: $('#asr-realtime-enabled')?.checked ? 'openai' : 'transcriptions',
+        provider: checkboxChecked('asr-realtime-enabled') ? 'openai' : 'transcriptions',
         apiKey: value('asr-key'),
         model: value('asr-model'),
         fileModel: value('asr-file-model'),
@@ -54,7 +55,7 @@ export function createSettingsController(host: UiRuntime) {
         claudeModel: value('claude-model')?.trim() ?? s.llm.claudeModel,
         claudePath: value('claude-path')?.trim() ?? s.llm.claudePath,
         ...compressionSettings({
-          autoCompact: $('#llm-auto-compact')?.checked,
+          autoCompact: checkboxChecked('llm-auto-compact'),
           compactThreshold: number('llm-compact-threshold'),
         }),
         ...executionLimits({

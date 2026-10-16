@@ -3,6 +3,7 @@ import { replacementRange } from '../../../domain/asr/range';
 import type { Meeting } from '../../../domain/models';
 import { duration } from '../../components/display';
 import { Button } from '../../primitives/button';
+import { Checkbox } from '../../primitives/checkbox';
 import { Input } from '../../primitives/input';
 
 export function RecordingTaskDialog({
@@ -122,10 +123,10 @@ export function RecordingTaskDialog({
             {range.segments.length > 5 && <p>另有 {range.segments.length - 5} 段位於此範圍。</p>}
           </div>
           <label className="check-line">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={replace}
-              onChange={(event) => setReplace(event.target.checked)}
+              disabled={busy}
+              onCheckedChange={(checked) => setReplace(checked === true)}
             />
             確認替換此範圍內的既有逐字稿
           </label>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { MediaPermissions } from '../../../domain/platform';
+import { Button } from '../../primitives/button';
 
 export function useMediaPermissions() {
   const [permissions, setPermissions] = useState<MediaPermissions>();
@@ -52,9 +53,15 @@ export function AudioPermissions({ permissions }: { permissions?: MediaPermissio
           ['denied', 'restricted'].includes(permissions[kind]) && (
             <p key={kind}>
               {kind === 'microphone' ? '麥克風' : '螢幕與系統音訊'}權限未開啟。
-              <button type="button" className="btn text small" onClick={() => void open(kind)}>
+              <Button
+                variant="ghost"
+                size="bare"
+                type="button"
+                className="btn text small"
+                onClick={() => void open(kind)}
+              >
                 開啟系統設定
-              </button>
+              </Button>
             </p>
           )
       )}

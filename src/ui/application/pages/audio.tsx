@@ -6,6 +6,7 @@ import { AudioJobs, DenoiseOption } from '../../audio/processing/progress';
 import { btn, heading } from '../../components/display';
 import { icon } from '../../components/icons';
 import { Button } from '../../primitives/button';
+import { Checkbox } from '../../primitives/checkbox';
 import { Select } from '../../primitives/select';
 import type { PageContext } from './contracts';
 
@@ -39,13 +40,14 @@ export function audioViews(
         {fileMode ? (
           <section className="panel">
             <h2>音訊檔案</h2>
-            <button className="dropzone" data-action="pick-files">
+            <Button variant="ghost" size="bare" className="dropzone" data-action="pick-files">
               {icon('upload')}
               <strong>選擇音訊檔案</strong>
               <small>
-                WAV · MP3 · M4A · FLAC · WEBM · OGG ｜ 單檔上限 {AUDIO_FILE_LIMIT_LABEL}
+                WAV · MP3 · M4A · FLAC · WEBM · OGG ｜{' '}
+                <span className="file-limit">單檔上限 {AUDIO_FILE_LIMIT_LABEL}</span>
               </small>
-            </button>
+            </Button>
             <div className="field">
               <label htmlFor="import-project">存入專案</label>
               <Select id="import-project">
@@ -65,9 +67,9 @@ export function audioViews(
                   {f.name}
                   <small>{(f.size / 1024 / 1024).toFixed(2)} MB</small>
                 </div>
-                <button data-remove-file={f.id} aria-label="移除檔案">
+                <Button variant="ghost" size="bare" data-remove-file={f.id} aria-label="移除檔案">
                   {icon('x')}
-                </button>
+                </Button>
               </div>
             ))}
             <p className="help">
@@ -84,7 +86,13 @@ export function audioViews(
               <h2>音訊來源</h2>
               <LiveDevicePicker state={state} busy={capture.active || capture.starting} />
               <label className="check-line">
-                <input type="checkbox" id="record-only" defaultChecked={state.recordOnly} />
+                <Checkbox
+                  id="record-only"
+                  defaultChecked={state.recordOnly}
+                  onCheckedChange={(checked) => {
+                    state.recordOnly = checked === true;
+                  }}
+                />
                 只錄音，會後再辨識
               </label>
               <div className="button-row">
@@ -124,15 +132,16 @@ export function audioViews(
         <div className="split-page">
           <section className="panel">
             <h2>匯入檔案</h2>
-            <button className="dropzone" data-action="pick-files">
+            <Button variant="ghost" size="bare" className="dropzone" data-action="pick-files">
               {icon('upload')}
               <strong>選擇音檔或逐字稿</strong>
               <small>
-                WAV · MP3 · M4A · FLAC · WEBM · OGG ｜ 單檔上限 {AUDIO_FILE_LIMIT_LABEL}
+                WAV · MP3 · M4A · FLAC · WEBM · OGG ｜{' '}
+                <span className="file-limit">單檔上限 {AUDIO_FILE_LIMIT_LABEL}</span>
                 <br />
-                TXT · SRT · VTT ｜ 單檔上限 25 MB
+                TXT · SRT · VTT ｜ <span className="file-limit">單檔上限 25 MB</span>
               </small>
-            </button>
+            </Button>
             <div className="field">
               <label>存入專案</label>
               <Select id="import-project">
@@ -150,9 +159,9 @@ export function audioViews(
                   {f.name}
                   <small>{(f.size / 1024 / 1024).toFixed(2)} MB</small>
                 </div>
-                <button data-remove-file={f.id} aria-label="移除檔案">
+                <Button variant="ghost" size="bare" data-remove-file={f.id} aria-label="移除檔案">
                   {icon('x')}
-                </button>
+                </Button>
               </div>
             ))}
             <p className="help">

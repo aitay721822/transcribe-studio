@@ -98,16 +98,24 @@ async function main() {
     await page.locator('#llm-steps').fill('240');
     await page.locator('#llm-tools').fill('350');
     await page.locator('#llm-timeout').fill('12');
+    await page.locator('#llm-auto-compact').uncheck();
     await page.locator('[data-action="save-settings"]').click();
     await page.getByText('設定已儲存', { exact: true }).waitFor();
     const saved = (await page.evaluate(() => window.studio.invoke('bootstrap'))).settings.llm;
     assert.deepEqual([saved.maxSteps, saved.maxToolCalls, saved.timeoutMinutes], [240, 350, 12]);
+    assert.equal(saved.autoCompact, false);
     await page.reload();
     await require('../setup/helpers.cjs').overview(page);
     await page.locator('[data-view="settings"]').click();
     await page.locator('[data-settings-tab="agent"]').click();
     assert.equal(await page.locator('#llm-timeout').inputValue(), '12');
     assert.equal(await page.locator('#llm-tools').inputValue(), '350');
+    assert.equal(await page.locator('#llm-auto-compact').isChecked(), false);
+    await page.locator('#llm-auto-compact').check();
+    await page.locator('[data-action="save-settings"]').click();
+    await page.waitForFunction(
+      async () => (await window.studio.invoke('bootstrap')).settings.llm.autoCompact === true
+    );
     await assert.rejects(
       page.evaluate(async () => {
         const s = (await window.studio.invoke('bootstrap')).settings;

@@ -1,9 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { icon } from '../../../components/icons';
+import { Button } from '../../../primitives/button';
+import { Disclosure, DisclosureTrigger } from '../../../primitives/disclosure';
+import { Input } from '../../../primitives/input';
+import { Select } from '../../../primitives/select';
 import { referenceKey } from './chips';
 import type { useMentions } from './controller';
 import { useMentionPosition } from './position';
+
+export function isMentionFocusTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  if (target.closest('.mention-menu')) return true;
+  const owner = target.closest<HTMLElement>('[data-dropdown-owner]')?.dataset.dropdownOwner;
+  return !!owner && !!document.getElementById(`${owner}-trigger`)?.closest('.mention-menu');
+}
 
 export function MentionMenu({ menu }: { menu: ReturnType<typeof useMentions> }) {
   const [root, setRoot] = useState(menu.project?.roots[0]?.id || '');
@@ -35,11 +46,19 @@ export function MentionMenu({ menu }: { menu: ReturnType<typeof useMentions> }) 
     >
       <div className="mention-heading">
         <span>新增</span>
-        <button type="button" aria-label="關閉參考選單" onClick={menu.close}>
+        <Button
+          variant="ghost"
+          size="bare"
+          type="button"
+          aria-label="關閉參考選單"
+          onClick={menu.close}
+        >
           ×
-        </button>
+        </Button>
       </div>
-      <button
+      <Button
+        variant="ghost"
+        size="bare"
         type="button"
         className="mention-action"
         disabled={!menu.project?.roots.length}
@@ -54,8 +73,10 @@ export function MentionMenu({ menu }: { menu: ReturnType<typeof useMentions> }) 
         {icon('folder')}
         <strong>檔案和資料夾</strong>
         <span>指定來源路徑</span>
-      </button>
-      <button
+      </Button>
+      <Button
+        variant="ghost"
+        size="bare"
         type="button"
         className="mention-action"
         onClick={() => {
@@ -66,7 +87,7 @@ export function MentionMenu({ menu }: { menu: ReturnType<typeof useMentions> }) 
         {icon('file')}
         <strong>圖片</strong>
         <span>加入圖片附件</span>
-      </button>
+      </Button>
       {!menu.project?.roots.length && <p className="help">請先在專案加入參考資料夾。</p>}
       <div className="mention-section-label">專案來源</div>
       <div
@@ -88,7 +109,9 @@ export function MentionMenu({ menu }: { menu: ReturnType<typeof useMentions> }) 
           };
 
           return (
-            <button
+            <Button
+              variant="ghost"
+              size="bare"
               type="button"
               role="option"
               aria-selected={i === menu.selected}
@@ -116,7 +139,7 @@ export function MentionMenu({ menu }: { menu: ReturnType<typeof useMentions> }) 
                     : `${r.kind === 'directory' ? '資料夾' : '文件'} · ${r.rootName}/${r.relative}`}
                 </span>
               </span>
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -125,7 +148,9 @@ export function MentionMenu({ menu }: { menu: ReturnType<typeof useMentions> }) 
           <div className="mention-section-label">Skills</div>
           <div className="mention-skills">
             {menu.skills.map((skill) => (
-              <button
+              <Button
+                variant="ghost"
+                size="bare"
                 type="button"
                 className="mention-action"
                 key={skill.id}
@@ -135,7 +160,7 @@ export function MentionMenu({ menu }: { menu: ReturnType<typeof useMentions> }) 
                 {icon('sparkle')}
                 <strong>{skill.name}</strong>
                 <span>{skill.description}</span>
-              </button>
+              </Button>
             ))}
           </div>
         </>
@@ -150,16 +175,23 @@ export function MentionMenu({ menu }: { menu: ReturnType<typeof useMentions> }) 
         <p className="help">{menu.page.stats.errorCount} 個項目無法讀取；搜尋結果可能不完整。</p>
       )}
       {menu.page?.nextCursor && (
-        <button type="button" className="mention-more" disabled={menu.loading} onClick={menu.more}>
+        <Button
+          variant="ghost"
+          size="bare"
+          type="button"
+          className="mention-more"
+          disabled={menu.loading}
+          onClick={menu.more}
+        >
           繼續搜尋／下一批
-        </button>
+        </Button>
       )}
       {menu.project?.roots.length > 0 && (
-        <details className="mention-direct" ref={direct}>
-          <summary>已知路徑？直接指定</summary>
+        <Disclosure className="mention-direct" ref={direct}>
+          <DisclosureTrigger>已知路徑？直接指定</DisclosureTrigger>
           <label>
             參考資料夾
-            <select
+            <Select
               aria-label="路徑所屬資料夾"
               value={root}
               onMouseDown={(e) => e.stopPropagation()}
@@ -170,11 +202,11 @@ export function MentionMenu({ menu }: { menu: ReturnType<typeof useMentions> }) 
                   {r.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <label>
             相對路徑
-            <input
+            <Input
               aria-label="直接指定相對路徑"
               placeholder="例如 規格/設計.md，留空指定整個資料夾"
               value={path}
@@ -189,10 +221,15 @@ export function MentionMenu({ menu }: { menu: ReturnType<typeof useMentions> }) 
               }}
             />
           </label>
-          <button type="button" onClick={() => void menu.resolve(root, path)}>
+          <Button
+            variant="ghost"
+            size="bare"
+            type="button"
+            onClick={() => void menu.resolve(root, path)}
+          >
             加入指定路徑
-          </button>
-        </details>
+          </Button>
+        </Disclosure>
       )}
       {menu.error && (
         <p className="help error" role="alert">

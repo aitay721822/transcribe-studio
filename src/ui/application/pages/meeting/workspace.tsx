@@ -80,18 +80,22 @@ export function workspaceViews(context: PageContext) {
           panes={[
             <section className="workspace-pane" key="source" aria-label="會議來源">
               <div className="tabs">
-                <button
+                <Button
+                  variant="ghost"
+                  size="bare"
                   className={`tab ${state.sourceTab === 'transcript' ? 'active' : ''}`}
                   data-source-tab="transcript"
                 >
                   逐字稿
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="bare"
                   className={`tab ${state.sourceTab === 'audio' ? 'active' : ''}`}
                   data-source-tab="audio"
                 >
                   音訊
-                </button>
+                </Button>
               </div>
               <div className="pane-body" id="source-body">
                 <AudioJobs state={state} meetingId={m.id} />
@@ -106,24 +110,30 @@ export function workspaceViews(context: PageContext) {
                     {icon('sparkle')}
                     <h3>一起整理，讓重點清楚。</h3>
                     <p>參考這場會議與專案檔案，協助撰寫、核對與修訂紀錄。</p>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="bare"
                       className="prompt-chip"
                       data-prompt="請整理完整會議紀錄，包含摘要、決議與待辦事項。"
                     >
                       整理摘要、決議與待辦 {icon('arrow')}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="bare"
                       className="prompt-chip"
                       data-prompt="請參考已選取的專案檔案，核對會議中的專有名詞，修正紀錄並保留引用。"
                     >
                       參考專案，核對專有名詞 {icon('arrow')}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="bare"
                       className="prompt-chip"
                       data-prompt="請將會議紀錄中的待辦事項整理為表格，列出負責人與期限，不明處標記待確認。"
                     >
                       整理待辦事項表格 {icon('arrow')}
-                    </button>
+                    </Button>
                   </div>
                 ) : (
                   ''

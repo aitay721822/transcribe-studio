@@ -1,9 +1,8 @@
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
 import type { BrowserWindow } from 'electron';
-import { app, dialog, ipcMain, nativeImage, net, protocol } from 'electron';
+import { app, dialog, ipcMain, nativeImage, protocol } from 'electron';
 import { registerAgent } from './desktop/agent-routes';
 import { registerCaptureLifecycle } from './desktop/asr/lifecycle';
 import { legacyAudioJob, registerAsrTasks } from './desktop/asr/tasks';
@@ -15,6 +14,7 @@ import { registerImports } from './desktop/ipc/imports';
 import { registerMeetings } from './desktop/ipc/meetings';
 import { registerProjects } from './desktop/ipc/projects';
 import { CredentialStartupCancelled, openCredentialVault } from './desktop/platform/credentials';
+import { recordingResponse } from './desktop/platform/recording';
 import { createSettings, registerSettings } from './desktop/settings';
 import { createWindow, registerWindow } from './desktop/window';
 import type { SpeechSession } from './domain/asr/config';
@@ -141,7 +141,7 @@ app
         .find((r) => r.id === id);
       if (!recording || !inside(path.join(dataDir, 'audio'), recording.path))
         return new Response('', { status: 404 });
-      return net.fetch(pathToFileURL(recording.path).toString(), { headers: request.headers });
+      return recordingResponse(request, recording.path);
     });
     settings.applyWindowTheme(settings.settingsPublic().theme);
     win = createWindow(path.join(__dirname, 'transport', 'preload.cjs'));

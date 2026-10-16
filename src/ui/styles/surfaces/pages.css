@@ -225,8 +225,11 @@ td {
 }
 .split-page {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 320px minmax(0, 1fr);
   gap: 22px;
+}
+.split-page > * {
+  min-width: 0;
 }
 .panel {
   background: var(--panel);

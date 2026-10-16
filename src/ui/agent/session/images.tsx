@@ -1,6 +1,7 @@
 import type { ImageAttachment, Meeting, UiState } from '../../../domain/models';
 import { notify } from '../../layout/notifications';
 import { invalidateUI } from '../../layout/roots';
+import { Button } from '../../primitives/button';
 
 export const imageUrl = (meetingId: string, image: ImageAttachment) =>
   `studio-media://image/${meetingId}/${image.id}`;
@@ -36,7 +37,9 @@ export function ImageAttachments({ state, meeting }: { state: UiState; meeting: 
       {images.map((image) => (
         <div className="image-attachment" key={image.id}>
           <img src={imageUrl(meeting.id, image)} alt={image.name} title={image.name} />
-          <button
+          <Button
+            variant="ghost"
+            size="bare"
             type="button"
             aria-label={`移除圖片 ${image.name}`}
             onClick={() => {
@@ -46,7 +49,7 @@ export function ImageAttachments({ state, meeting }: { state: UiState; meeting: 
             }}
           >
             ×
-          </button>
+          </Button>
         </div>
       ))}
     </div>

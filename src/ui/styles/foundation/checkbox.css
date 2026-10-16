@@ -1,0 +1,65 @@
+/* Unlayered rules integrate the shadcn primitive with Studio's existing control reset. */
+[data-slot="checkbox"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--ink);
+  vertical-align: middle;
+  transition:
+    background-color 120ms,
+    border-color 120ms,
+    box-shadow 120ms;
+}
+[data-slot="checkbox"]:is([data-state="checked"], [data-state="indeterminate"]) {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--bg);
+}
+[data-slot="checkbox"]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+[data-slot="checkbox"][aria-invalid="true"] {
+  border-color: var(--error);
+  outline-color: var(--error);
+}
+[data-slot="checkbox"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+[data-slot="checkbox-indicator"] {
+  display: grid;
+  place-content: center;
+  color: inherit;
+}
+[data-slot="checkbox-indicator"] svg {
+  width: 14px;
+  height: 14px;
+}
+[data-slot="checkbox-indicator"][data-state="checked"] .checkbox-mixed,
+[data-slot="checkbox-indicator"][data-state="indeterminate"] .checkbox-check {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="checkbox"] {
+    transition: none;
+  }
+}
+@media (forced-colors: active) {
+  [data-slot="checkbox"] {
+    border-color: ButtonText;
+  }
+  [data-slot="checkbox"]:is([data-state="checked"], [data-state="indeterminate"]) {
+    forced-color-adjust: none;
+    border-color: Highlight;
+    background: Highlight;
+    color: HighlightText;
+  }
+}

@@ -144,9 +144,6 @@ export function applicationEvents(
         state.settings = settings.collectSettings();
         render();
         break;
-      case 'record-only':
-        state.recordOnly = input.checked;
-        break;
       case 'live-project':
       case 'import-project':
         state.projectId = input.value;

@@ -2,6 +2,7 @@ import type { UiState } from '../../domain/models';
 import { btn } from '../components/display';
 import { icon } from '../components/icons';
 import { Button } from '../primitives/button';
+import { Disclosure, DisclosureTrigger } from '../primitives/disclosure';
 import { imageUrl } from './session/images';
 
 export function agentActions(state: UiState) {
@@ -46,8 +47,8 @@ export function queueView(state: UiState) {
         {state.queuePaused && !state.runId ? btn('繼續佇列', 'resume-agent', '', 'text small') : ''}
       </div>
       {queued.map((item, __index) => (
-        <details className="agent-queue-item" key={item.id}>
-          <summary>
+        <Disclosure className="agent-queue-item" key={item.id}>
+          <DisclosureTrigger>
             <span className="queue-glyph">{icon('list')}</span>
             {item.images?.length ? (
               <span className="queue-thumbnail">
@@ -59,7 +60,9 @@ export function queueView(state: UiState) {
               {item.steering ? '引導傳送中 · ' : ''}
               {item.instruction}
             </span>
-            <button
+            <Button
+              variant="ghost"
+              size="bare"
               type="button"
               className="queue-steer"
               data-steer-input={item.id}
@@ -69,7 +72,7 @@ export function queueView(state: UiState) {
               title="將這則排隊訊息改為引導目前工作"
             >
               ↳ <span>引導</span>
-            </button>
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -81,7 +84,7 @@ export function queueView(state: UiState) {
             >
               {icon('trash')}
             </Button>
-          </summary>
+          </DisclosureTrigger>
           <div className="queue-detail">
             <p>{item.instruction}</p>
             {item.images?.length ? (
@@ -92,7 +95,7 @@ export function queueView(state: UiState) {
               </div>
             ) : null}
           </div>
-        </details>
+        </Disclosure>
       ))}
     </div>
   );

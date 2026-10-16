@@ -56,11 +56,6 @@
 .temporary-toggle > span {
   flex: 1;
 }
-.temporary-toggle input {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--accent);
-}
 .temporary-dot {
   width: 7px;
   height: 7px;

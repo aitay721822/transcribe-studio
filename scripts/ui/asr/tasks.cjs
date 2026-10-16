@@ -82,6 +82,10 @@ async function main() {
 
     await enqueue();
     await page.locator('.asr-task-card[data-state="waiting_retry"]').waitFor();
+    const progress = page.getByRole('progressbar', { name: '辨識分段完成進度' });
+    assert.equal(await progress.getAttribute('data-slot'), 'progress');
+    assert.equal(await progress.getAttribute('aria-valuenow'), '0');
+    assert.equal(await progress.getAttribute('aria-valuemax'), '1');
     assert.match(await page.locator('.asr-task-retry').textContent(), /秒後重試/);
     assert.equal(await page.getByText('private upstream details').count(), 0);
     await fs.mkdir('output/playwright', { recursive: true });
@@ -98,7 +102,7 @@ async function main() {
     await page.locator('#tasks-state').selectOption('paused');
     const card = page.locator('.asr-task-card');
     await card.waitFor();
-    await card.locator('input[type="checkbox"]').check();
+    await card.getByRole('checkbox').check();
     await page.getByRole('button', { name: '批次重試', exact: true }).click();
     await page.locator('.asr-task-card[data-state="paused"]').waitFor();
     await page.getByRole('button', { name: '暫停全部背景任務', exact: true }).click();
@@ -143,7 +147,23 @@ async function main() {
     );
     await page.locator(`[data-project="${project.id}"]`).click();
     await page.locator(`[data-meeting="${task.meetingId}"]`).first().click();
+    const autoRecovery = page.getByRole('checkbox', {
+      name: '自動建立斷線補辨識任務',
+      exact: true,
+    });
+    await autoRecovery.uncheck();
+    await page.waitForFunction(
+      async (id) => (await window.studio.invoke('asr:auto-recovery', id)) === false,
+      task.meetingId
+    );
     await page.locator('[data-source-tab="audio"]').click();
+    await require('./player.cjs').verifyPlayer(page, app);
+    assert.equal(await autoRecovery.isChecked(), false);
+    await autoRecovery.check();
+    await page.waitForFunction(
+      async (id) => (await window.studio.invoke('asr:auto-recovery', id)) === true,
+      task.meetingId
+    );
     await page.locator('[data-retranscribe]').first().click();
     await page.locator('#recovery-start').fill('0.5');
     await page.locator('#recovery-end').fill('1.5');
@@ -183,6 +203,23 @@ async function main() {
     await enqueue();
     await page.locator(`.sidebar [data-project="${project.id}"]`).click();
     await page.waitForFunction(() => document.querySelectorAll('.asr-task-card').length === 2);
+    const selectAll = page.getByRole('checkbox', { name: '選取本頁全部任務', exact: true });
+    await page.locator('.asr-task-card').first().getByRole('checkbox').check();
+    assert.equal(await selectAll.getAttribute('aria-checked'), 'mixed');
+    assert.equal(await selectAll.getAttribute('data-state'), 'indeterminate');
+    assert(await selectAll.locator('[data-slot="checkbox-indicator"] svg').isVisible());
+    assert.notEqual(
+      await selectAll
+        .locator('.checkbox-mixed')
+        .evaluate((element) => getComputedStyle(element).display),
+      'none'
+    );
+    assert.equal(await selectAll.locator('.checkbox-check').isVisible(), false);
+    await selectAll.focus();
+    await page.keyboard.press('Space');
+    assert.equal(await selectAll.isChecked(), true);
+    await selectAll.uncheck();
+    assert.equal(await page.locator('.asr-task-card [aria-checked="true"]').count(), 0);
     await page.getByRole('checkbox', { name: '選取本頁全部任務', exact: true }).check();
     await page.getByRole('button', { name: '批次刪除', exact: true }).click();
     await page.getByText('目前沒有符合的辨識任務。', { exact: true }).waitFor();

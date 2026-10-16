@@ -140,9 +140,16 @@ function ProjectEditor({
     <>
       <div className="modal-head">
         <h2>編輯專案</h2>
-        <button data-close-modal aria-label="關閉" disabled={busy} onClick={() => finish(null)}>
+        <Button
+          variant="ghost"
+          size="bare"
+          data-close-modal
+          aria-label="關閉"
+          disabled={busy}
+          onClick={() => finish(null)}
+        >
           {icon('x')}
-        </button>
+        </Button>
       </div>
       <div className="modal-body">
         <label className="project-name-field">
@@ -171,7 +178,9 @@ function ProjectEditor({
               <div className="project-editor-root" key={root.id}>
                 {icon('folder')}
                 <span title={root.path}>{root.name}</span>
-                <button
+                <Button
+                  variant="ghost"
+                  size="bare"
                   type="button"
                   data-editor-remove-root={root.id}
                   aria-label={`移除 ${root.name}`}
@@ -182,11 +191,13 @@ function ProjectEditor({
                   }}
                 >
                   {icon('x')}
-                </button>
+                </Button>
               </div>
             ))}
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="bare"
             id="project-editor-add"
             ref={add}
             type="button"
@@ -196,7 +207,7 @@ function ProjectEditor({
             {icon('folder')}
             <span>新增資料夾</span>
             {icon('plus', 'folder-plus')}
-          </button>
+          </Button>
         </div>
         <p id="project-editor-error" className="error" role="alert" hidden={!error}>
           {error}

@@ -47,12 +47,10 @@
 .tab {
   color: var(--muted);
   font-size: 16px;
-  border-bottom: 2px solid transparent;
   padding: 10px 0;
 }
 .tab.active {
   color: var(--accent);
-  border-bottom-color: var(--accent);
 }
 .notes-save {
   margin-left: auto;

@@ -28,7 +28,17 @@
   background: var(--accent-soft);
   gap: 11px;
   width: 100%;
+  min-width: 0;
+  padding: 18px 16px;
+  white-space: normal;
+  text-align: center;
   margin-bottom: 20px;
+}
+.dropzone > strong,
+.dropzone > small {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 .dropzone .icon {
   width: 25px;
@@ -43,6 +53,10 @@
   font-size: 16px;
   color: var(--muted);
 }
+.dropzone .file-limit {
+  display: inline-block;
+  white-space: nowrap;
+}
 .selected-file {
   display: flex;
   gap: 10px;
@@ -52,6 +66,8 @@
 }
 .selected-file > div {
   flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .selected-file small {
   display: block;
@@ -87,9 +103,6 @@
   gap: 8px;
   font-size: 16px;
   margin: 16px 0;
-}
-.check-line input {
-  accent-color: var(--accent);
 }
 .record-card {
   background: var(--accent-soft);
@@ -142,9 +155,8 @@
   margin: 16px 0;
   cursor: pointer;
 }
-.audio-denoise-option input {
+.audio-denoise-option [data-slot="checkbox"] {
   margin-top: 6px;
-  accent-color: var(--accent);
 }
 .audio-denoise-option strong {
   font-weight: 500;
@@ -213,12 +225,11 @@
 .audio-job-hint {
   color: var(--muted);
 }
-.audio-job progress {
+.audio-job [data-slot="progress"] {
   display: block;
   width: 100%;
   height: 7px;
   margin-top: 12px;
-  accent-color: var(--accent);
 }
 .audio-job-hint {
   margin: 10px 0 0;

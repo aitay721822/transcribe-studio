@@ -122,7 +122,7 @@ async function main() {
     assert.equal((await page.evaluate(() => window.studio.invoke('audio:jobs'))).length, 1);
     await page.locator('[data-cancel-audio]').click();
     await page.locator('.audio-job[data-stage="cancelled"]').waitFor();
-    assert.equal(await page.locator('.audio-job progress').count(), 0);
+    assert.equal(await page.locator('.audio-job [role="progressbar"]').count(), 0);
     // Disabling denoising is retained and the remaining stages still finish normally.
     hold = false;
     await page.locator('[data-audio-denoise]').uncheck();
@@ -160,7 +160,10 @@ async function main() {
     await page.locator('[data-action="pick-files"]').click();
     await page.locator('[data-action="transcribe-files"]').click();
     await page.locator('.audio-job[data-stage="failed"]').waitFor();
-    assert.equal(await page.locator('.audio-job[data-stage="failed"] progress').count(), 0);
+    assert.equal(
+      await page.locator('.audio-job[data-stage="failed"] [role="progressbar"]').count(),
+      0
+    );
     hold = true;
     await app.evaluate(({ dialog }, file) => {
       dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [file] });

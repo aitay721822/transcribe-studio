@@ -9,6 +9,7 @@ import { SpeechServices } from '../audio/configuration/services';
 import { closeDropdown } from '../components/dropdown';
 import { Reveal } from '../components/motion/reveal';
 import { Button } from '../primitives/button';
+import { checkboxChecked } from '../primitives/checkbox';
 import { Select } from '../primitives/select';
 
 interface SetupHost {
@@ -191,10 +192,7 @@ export function SetupWizard({ settings, host }: SetupProps) {
 
     if (step === 0) {
       const a = draft.asr;
-      a.provider = (document.getElementById('setup-asr-realtime-enabled') as HTMLInputElement)
-        ?.checked
-        ? 'openai'
-        : 'transcriptions';
+      a.provider = checkboxChecked('setup-asr-realtime-enabled') ? 'openai' : 'transcriptions';
       a.apiKey = value('asr-key') ?? a.apiKey;
       a.fileApiKey = value('asr-file-key') ?? a.fileApiKey;
       a.model = value('asr-model')?.trim();

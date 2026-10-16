@@ -3,6 +3,7 @@ import { executionLimits } from '../../../../domain/agents/limits';
 import { AgentConfiguration } from '../../../agent/configuration';
 import { btn } from '../../../components/display';
 import { icon } from '../../../components/icons';
+import { Checkbox } from '../../../primitives/checkbox';
 import { Select } from '../../../primitives/select';
 import type { PageContext } from '../contracts';
 import { field } from './field';
@@ -58,7 +59,7 @@ export function agentSettings(context: PageContext) {
       )}
       <div className="notice">
         <label className="check-line">
-          <input id="llm-auto-compact" type="checkbox" defaultChecked={compact.autoCompact} />
+          <Checkbox id="llm-auto-compact" defaultChecked={compact.autoCompact} />
           自動壓縮上下文
         </label>
         <p>

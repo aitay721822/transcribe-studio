@@ -77,6 +77,7 @@ async function main() {
     'transport/transcription/session',
     'transport/transcription/wav',
     'desktop/ipc/imports',
+    'desktop/platform/recording',
     'harness/revisions/annotations',
     'services/workspace/files',
     'services/workspace/worker',

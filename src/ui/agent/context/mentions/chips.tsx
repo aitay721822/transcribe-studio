@@ -1,5 +1,6 @@
 import type { ContextReference, Meeting, UiState } from '../../../../domain/models';
 import { invalidateUI } from '../../../layout/roots';
+import { Button } from '../../../primitives/button';
 
 export function referenceDrafts(state: UiState, meeting: Meeting): ContextReference[] {
   state.referenceDrafts ||= {};
@@ -38,7 +39,9 @@ export function ReferenceChips({ state, meeting }: { state: UiState; meeting: Me
         return (
           <span className="reference-chip" key={referenceKey(r)} title={label}>
             <span>{label}</span>
-            <button
+            <Button
+              variant="ghost"
+              size="bare"
               type="button"
               aria-label={`移除${label}`}
               onClick={() => {
@@ -49,7 +52,7 @@ export function ReferenceChips({ state, meeting }: { state: UiState; meeting: Me
               }}
             >
               ×
-            </button>
+            </Button>
           </span>
         );
       })}

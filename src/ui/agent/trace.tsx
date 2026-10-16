@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { type ToolCallTrace, toolSummary } from '../../domain/agents/trace';
 import { record } from '../../domain/value';
+import { Button } from '../primitives/button';
+import { Disclosure, DisclosureTrigger } from '../primitives/disclosure';
 
 function JsonDetail({ label, value }: { label: string; value: unknown }) {
   const [copied, setCopied] = useState('');
@@ -9,7 +11,9 @@ function JsonDetail({ label, value }: { label: string; value: unknown }) {
     <section className="agent-json-detail">
       <div>
         <strong>{label}</strong>
-        <button
+        <Button
+          variant="ghost"
+          size="bare"
           type="button"
           className="btn text small"
           onClick={async () => {
@@ -22,7 +26,7 @@ function JsonDetail({ label, value }: { label: string; value: unknown }) {
           }}
         >
           {copied || '複製完整內容'}
-        </button>
+        </Button>
       </div>
       <pre tabIndex={0} aria-label={label}>
         {text}
@@ -65,13 +69,13 @@ export function ToolTrace({ call, running }: { call: ToolCallTrace; running: boo
   };
 
   return (
-    <details
+    <Disclosure
       className="agent-tool-trace"
       data-tool={call.input.name}
       data-status={status}
       onToggle={(event) => setOpen(event.currentTarget.open)}
     >
-      <summary>
+      <DisclosureTrigger>
         <span>
           <strong>{call.input.name}</strong>
           <small>{toolSummary(call)}</small>
@@ -80,7 +84,7 @@ export function ToolTrace({ call, running }: { call: ToolCallTrace; running: boo
           {status}
           {output?.durationMs !== undefined ? ` · ${(output.durationMs / 1000).toFixed(2)} 秒` : ''}
         </span>
-      </summary>
+      </DisclosureTrigger>
       {call.repetition > 1 && (
         <p className="agent-tool-repeat">同一組參數已呼叫 {call.repetition} 次</p>
       )}
@@ -106,6 +110,6 @@ export function ToolTrace({ call, running }: { call: ToolCallTrace; running: boo
           </dl>
         </div>
       )}
-    </details>
+    </Disclosure>
   );
 }

@@ -3,6 +3,7 @@ import type { AsrSettings } from '../../../domain/asr/config';
 import { TRANSCRIPTION_URL } from '../../../domain/transcription';
 import { closeDropdown } from '../../components/dropdown';
 import { Button } from '../../primitives/button';
+import { Checkbox } from '../../primitives/checkbox';
 import { Input } from '../../primitives/input';
 import { Select } from '../../primitives/select';
 import { Textarea } from '../../primitives/textarea';
@@ -170,11 +171,10 @@ export function SpeechServices({
       >
         <h2>即時辨識</h2>
         <label className="check-line">
-          <input
+          <Checkbox
             id={id('realtime-enabled')}
-            type="checkbox"
             checked={enabled}
-            onChange={(event) => setEnabled(event.target.checked)}
+            onCheckedChange={(checked) => setEnabled(checked === true)}
           />
           啟用即時辨識
         </label>

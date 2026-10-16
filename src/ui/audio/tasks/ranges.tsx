@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { AsrTask, ChunkRange } from '../../../domain/asr/tasks';
 import { duration } from '../../components/display';
 import { Button } from '../../primitives/button';
+import { Disclosure, DisclosureTrigger } from '../../primitives/disclosure';
 
 const labels: Record<ChunkRange['state'], string> = {
   queued: '尚未辨識',
@@ -36,8 +37,8 @@ export function TaskRanges({ task }: { task: AsrTask }) {
   }, [open, offset, task.id, task.updatedAt, task.completedChunks]);
   if (!task.totalChunks) return null;
   return (
-    <details onToggle={(event) => setOpen(event.currentTarget.open)}>
-      <summary>檢視已完成與未辨識範圍</summary>
+    <Disclosure onToggle={(event) => setOpen(event.currentTarget.open)}>
+      <DisclosureTrigger>檢視已完成與未辨識範圍</DisclosureTrigger>
       {open && (
         <>
           {error && <p role="alert">{error}</p>}
@@ -72,6 +73,6 @@ export function TaskRanges({ task }: { task: AsrTask }) {
           </div>
         </>
       )}
-    </details>
+    </Disclosure>
   );
 }

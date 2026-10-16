@@ -7,6 +7,7 @@ import { ToolTrace } from '../../../agent/trace';
 import { btn, date, markdown } from '../../../components/display';
 import { icon } from '../../../components/icons';
 import { Button } from '../../../primitives/button';
+import { Disclosure, DisclosureTrigger } from '../../../primitives/disclosure';
 import type { PageContext } from '../contracts';
 
 export function agentViews(context: PageContext) {
@@ -49,10 +50,10 @@ export function agentViews(context: PageContext) {
           .filter((r) => r.notes)
           .slice(-3)
           .map((r, __index) => (
-            <details className="proposal-card" key={r.runId}>
-              <summary>先前的修訂提案 · {date(r.createdAt)}</summary>
+            <Disclosure className="proposal-card" key={r.runId}>
+              <DisclosureTrigger>先前的修訂提案 · {date(r.createdAt)}</DisclosureTrigger>
               <div className="document-preview">{markdown(r.notes, undefined, m)}</div>
-            </details>
+            </Disclosure>
           ))}
 
         <AgentExecution state={state} />

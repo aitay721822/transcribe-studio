@@ -3,6 +3,7 @@ import * as m from 'motion/react-m';
 import { useSyncExternalStore } from 'react';
 import { icon } from '../components/icons';
 import { useMotionPreference } from '../components/motion/provider';
+import { Button } from '../primitives/button';
 import { renderNodeInto } from './roots';
 
 interface Notification {
@@ -62,9 +63,9 @@ function Notifications() {
           transition={{ duration: reduced ? 0 : 0.18 }}
         >
           <span>{n.message}</span>
-          <button aria-label="關閉通知" onClick={() => dismiss(n.id)}>
+          <Button variant="ghost" size="bare" aria-label="關閉通知" onClick={() => dismiss(n.id)}>
             {icon('x')}
-          </button>
+          </Button>
         </m.div>
       ))}
     </AnimatePresence>

@@ -245,6 +245,7 @@ export function Select({
           <div
             className={`dropdown-popup${wrapOptions ? ' device-options' : ''}`}
             ref={popup}
+            data-dropdown-owner={id}
             popover="manual"
           >
             <div className="dropdown-search">
@@ -299,7 +300,9 @@ export function Select({
                   {entry.group && entry.group !== visible[i - 1]?.group ? (
                     <div className="dropdown-group">{entry.group}</div>
                   ) : null}
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="bare"
                     type="button"
                     tabIndex={-1}
                     id={`${id}-option-${i}`}
@@ -315,7 +318,7 @@ export function Select({
                     <span className="dropdown-check">
                       {entry.value === value ? icon('check') : null}
                     </span>
-                  </button>
+                  </Button>
                 </Fragment>
               ))}
               {!visible.length && <div className="dropdown-empty">沒有符合的選項</div>}

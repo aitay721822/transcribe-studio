@@ -3,6 +3,7 @@ import { discardTemporary } from '../agent/session/temporary';
 import { date, markdown } from '../components/display';
 import { invalidateUI } from '../layout/roots';
 import { Button } from '../primitives/button';
+import { Checkbox, checkboxChecked } from '../primitives/checkbox';
 import { $, type UiRuntime } from './runtime';
 
 export function createWorkspaceController(host: UiRuntime) {
@@ -231,7 +232,7 @@ export function createWorkspaceController(host: UiRuntime) {
       '匯出 Word 文件',
       <>
         <label className="check-line">
-          <input type="checkbox" id="export-transcript" />
+          <Checkbox id="export-transcript" />
           包含逐字稿附錄
         </label>
         <p className="help">會議紀錄中的標題、清單與表格會轉換成 Word 格式。</p>
@@ -241,7 +242,7 @@ export function createWorkspaceController(host: UiRuntime) {
         className="btn primary"
         id="do-export"
         onClick={safe(async () => {
-          const p = await api('export:docx', state.meetingId, $('#export-transcript').checked);
+          const p = await api('export:docx', state.meetingId, checkboxChecked('export-transcript'));
           if (p) {
             modal.close();
             toast(`Word 文件已匯出：${p}`);

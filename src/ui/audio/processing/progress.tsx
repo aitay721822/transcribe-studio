@@ -1,16 +1,16 @@
 import type { UiState } from '../../../domain/models';
 import { invalidateUI } from '../../layout/roots';
+import { Checkbox } from '../../primitives/checkbox';
 import { TaskPanel } from '../tasks/panel';
 
 export function DenoiseOption({ state }: { state: UiState }) {
   return (
     <label className="audio-denoise-option">
-      <input
-        type="checkbox"
+      <Checkbox
         data-audio-denoise
         checked={state.audioDenoise !== false}
-        onChange={(event) => {
-          state.audioDenoise = event.currentTarget.checked;
+        onCheckedChange={(checked) => {
+          state.audioDenoise = checked === true;
           localStorage.setItem('studio.audio-denoise', String(state.audioDenoise));
           invalidateUI();
         }}

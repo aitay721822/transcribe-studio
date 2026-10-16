@@ -14,8 +14,7 @@ async function main() {
     env,
   });
   try {
-    await require('../setup/helpers.cjs').desktopWindow(app);
-    const page = await app.firstWindow();
+    const page = await require('../setup/helpers.cjs').desktopWindow(app);
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     page.on('console', (message) => {
@@ -40,6 +39,50 @@ async function main() {
         .evaluate((input) => getComputedStyle(input).outlineWidth),
       '2px'
     );
+    await page.locator('#setup-asr-realtime-tab').click();
+    const checkbox = page.getByRole('checkbox', { name: '啟用即時辨識', exact: true });
+    assert.equal(await checkbox.getAttribute('data-slot'), 'checkbox');
+    await fs.mkdir('output/playwright', { recursive: true });
+    for (const theme of ['light', 'dark', 'forest']) {
+      await page.evaluate((value) => {
+        document.documentElement.dataset.theme = value;
+      }, theme);
+      await checkbox.evaluate(async (element) => {
+        await Promise.all(element.getAnimations().map((animation) => animation.finished));
+      });
+      const unchecked = await checkbox.evaluate(
+        (element) => getComputedStyle(element).backgroundColor
+      );
+      await checkbox.focus();
+      await page.keyboard.press('Space');
+      await checkbox.evaluate(async (element) => {
+        await Promise.all(element.getAnimations().map((animation) => animation.finished));
+      });
+      assert.equal(await checkbox.isChecked(), true);
+      assert.equal(await checkbox.getAttribute('data-state'), 'checked');
+      assert(await checkbox.locator('[data-slot="checkbox-indicator"]').isVisible());
+      const appearance = await checkbox.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+          background: style.backgroundColor,
+          radius: style.borderRadius,
+          outline: style.outlineWidth,
+        };
+      });
+      assert.notEqual(appearance.background, unchecked);
+      assert.equal(appearance.radius, '4px');
+      assert.equal(appearance.outline, '2px');
+      await page.screenshot({ path: `output/playwright/shadcn-checkbox-${theme}.png` });
+      await page.keyboard.press('Enter');
+      assert.equal(
+        await checkbox.isChecked(),
+        true,
+        'Enter does not submit or toggle the checkbox'
+      );
+      await page.getByText('啟用即時辨識', { exact: true }).click();
+      assert.equal(await checkbox.isChecked(), false, 'The surrounding label toggles the control');
+    }
+    await page.locator('#setup-asr-offline-tab').click();
     await require('../setup/helpers.cjs').overview(page);
     await page.locator('[data-action="new-project"]').click();
     assert.equal(await page.locator('#name-input').getAttribute('data-slot'), 'input');

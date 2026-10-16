@@ -3,6 +3,8 @@ const { packagedExecutable } = require('./executable.cjs');
 
 for (const script of [
   'scripts/ui/platform/desktop.cjs',
+  'scripts/ui/design/primitives.cjs',
+  'scripts/ui/design/layout.cjs',
   'scripts/ui/security/credentials.cjs',
   'scripts/ui/harness-packaged.cjs',
   'scripts/ui/setup/playback.cjs',

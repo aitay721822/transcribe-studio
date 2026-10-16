@@ -194,6 +194,12 @@ async function main() {
     await page.locator('.reference-chip').filter({ hasText: '資料夾' }).waitFor();
     await input.fill('@known-path');
     await page.locator('.mention-direct summary').click();
+    await page.getByRole('combobox', { name: /^路徑所屬資料夾/ }).click();
+    await page.locator('.dropdown-popup').getByRole('option').first().click();
+    assert.equal(
+      await page.getByRole('textbox', { name: '直接指定相對路徑' }).getAttribute('data-slot'),
+      'input'
+    );
     await page.getByRole('textbox', { name: '直接指定相對路徑' }).fill('../outside.txt');
     await page.getByRole('button', { name: '加入指定路徑', exact: true }).click();
     await page.locator('.mention-menu [role="alert"]').filter({ hasText: '超出' }).waitFor();

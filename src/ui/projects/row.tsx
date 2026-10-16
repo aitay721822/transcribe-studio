@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Project, UiState } from '../../domain/models';
 import { icon } from '../components/icons';
+import { Button } from '../primitives/button';
 
 export function ProjectSidebarRow({
   state,
@@ -30,7 +31,9 @@ export function ProjectSidebarRow({
     <>
       <div className={`project-sidebar-row ${p.id === state.projectId ? 'selected' : ''}`}>
         {!archived && (
-          <button
+          <Button
+            variant="ghost"
+            size="bare"
             type="button"
             className="project-toggle"
             data-project-toggle={p.id}
@@ -45,9 +48,11 @@ export function ProjectSidebarRow({
             }}
           >
             {icon('down')}
-          </button>
+          </Button>
         )}
-        <button
+        <Button
+          variant="ghost"
+          size="bare"
           className={`project-button ${p.id === state.projectId ? 'selected' : ''}`}
           data-project={p.id}
           title={p.name}
@@ -55,19 +60,26 @@ export function ProjectSidebarRow({
           {icon('folder')}
           <span className="project-name">{p.name}</span>
           {p.pinned ? icon('pin', 'project-pin') : ''}
-        </button>
+        </Button>
         <div className="project-row-actions">
-          <button
+          <Button
+            variant="ghost"
+            size="bare"
             data-project-menu={p.id}
             aria-label={`${p.name} 的專案選單`}
             aria-haspopup="menu"
             aria-expanded="false"
           >
             {icon('more')}
-          </button>
-          <button data-project-edit={p.id} aria-label={`編輯 ${p.name}`}>
+          </Button>
+          <Button
+            variant="ghost"
+            size="bare"
+            data-project-edit={p.id}
+            aria-label={`編輯 ${p.name}`}
+          >
             {icon('edit')}
-          </button>
+          </Button>
         </div>
       </div>
       {!archived && (
@@ -81,7 +93,9 @@ export function ProjectSidebarRow({
           <div className="project-children-inner">
             <div className="project-sub">
               {meetings.slice(0, visibleCount).map((m) => (
-                <button
+                <Button
+                  variant="ghost"
+                  size="bare"
                   className={
                     'meeting-link ' +
                     (m.id === state.meetingId && state.view === 'workspace' ? 'active' : '')
@@ -90,16 +104,18 @@ export function ProjectSidebarRow({
                   key={m.id}
                 >
                   {m.title}
-                </button>
+                </Button>
               ))}
               {meetings.length > visibleCount && (
-                <button
+                <Button
+                  variant="ghost"
+                  size="bare"
                   type="button"
                   className="meeting-link"
                   onClick={() => setVisibleCount((count) => count + 5)}
                 >
                   顯示更多
-                </button>
+                </Button>
               )}
               {!meetings.length && <div className="meeting-link">尚無會議紀錄</div>}
             </div>

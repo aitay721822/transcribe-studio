@@ -179,6 +179,11 @@ async function main() {
     await page.getByText('WebRTC 第2次連線', { exact: true }).waitFor();
     assert.equal(rtcConnections, 2);
     assert.equal(await page.evaluate(() => window.recoveryPeers.length), 2);
+    // The fake microphone starts with silence; capture voiced PCM before testing range review.
+    await page.waitForFunction(() => {
+      const timer = document.querySelector('#record-timer')?.textContent || '0';
+      return timer.split(':').reduce((sum, part) => sum * 60 + Number(part), 0) >= 2;
+    });
     await page.locator('[data-action="stop-recording"]').click();
     await page.getByText('錄音已儲存', { exact: true }).waitFor();
     // The provider omitted timing. Keep backup visible for range review, never append it blindly.

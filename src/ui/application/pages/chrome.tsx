@@ -35,12 +35,14 @@ export function chromeViews(context: PageContext) {
         </div>
         {projectSidebar(state)}
         <div className="sidebar-bottom">
-          <button
+          <Button
+            variant="ghost"
+            size="bare"
             className={`nav-button ${state.view === 'settings' ? 'active' : ''}`}
             data-view="settings"
           >
             {icon('settings')}設定
-          </button>
+          </Button>
         </div>
       </aside>
     );
@@ -49,7 +51,9 @@ export function chromeViews(context: PageContext) {
   function titlebar() {
     return (
       <header className="app-titlebar">
-        <button
+        <Button
+          variant="ghost"
+          size="bare"
           className="chrome-button"
           data-action={state.view === 'settings' ? 'back-workspace' : 'collapse-sidebar'}
           aria-label={
@@ -60,7 +64,7 @@ export function chromeViews(context: PageContext) {
           title={state.view === 'settings' ? '返回工作區' : '切換專案側欄'}
         >
           {icon(state.view === 'settings' ? 'back' : 'panel')}
-        </button>
+        </Button>
         <span className="chrome-brand">Transcribe Studio</span>
         <div className="chrome-menu">
           {btn('匯入', 'go-import', '', 'text small')}
@@ -69,15 +73,15 @@ export function chromeViews(context: PageContext) {
         </div>
         <div className="top-spacer" />
         <div className="window-controls">
-          <button data-window="minimize" aria-label="最小化">
+          <Button variant="ghost" size="bare" data-window="minimize" aria-label="最小化">
             {icon('minimize')}
-          </button>
-          <button data-window="maximize" aria-label="最大化">
+          </Button>
+          <Button variant="ghost" size="bare" data-window="maximize" aria-label="最大化">
             {icon('maximize')}
-          </button>
-          <button data-window="close" aria-label="關閉視窗">
+          </Button>
+          <Button variant="ghost" size="bare" data-window="close" aria-label="關閉視窗">
             {icon('x')}
-          </button>
+          </Button>
         </div>
       </header>
     );
@@ -88,7 +92,9 @@ export function chromeViews(context: PageContext) {
       <header className="topbar">
         <div className="breadcrumb">
           {project() ? (
-            <button
+            <Button
+              variant="ghost"
+              size="bare"
               className="breadcrumb-project"
               data-project-menu={project().id}
               aria-label={`${project().name} 的專案下拉選單`}
@@ -97,7 +103,7 @@ export function chromeViews(context: PageContext) {
             >
               {project().name}
               {icon('down')}
-            </button>
+            </Button>
           ) : (
             <span>個人工作區</span>
           )}
@@ -115,9 +121,9 @@ export function chromeViews(context: PageContext) {
           )}
         </div>
         <div className="top-spacer" />
-        <button className="search-button" data-action="search">
+        <Button variant="ghost" size="bare" className="search-button" data-action="search">
           {icon('search')}搜尋會議<span className="key">{shortcutLabel('K')}</span>
-        </button>
+        </Button>
         {state.view === 'workspace' ? (
           btn('匯出 Word', 'export', 'download', 'small')
         ) : (

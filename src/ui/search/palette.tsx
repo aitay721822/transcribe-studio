@@ -3,6 +3,7 @@ import type { Meeting, Project } from '../../domain/models';
 import { shortcutLabel } from '../application/platform/shortcuts';
 import { icon } from '../components/icons';
 import { mountOverlay } from '../layout/overlays';
+import { Button } from '../primitives/button';
 import { Input } from '../primitives/input';
 
 type QuickAction = 'new-meeting' | 'add-folder' | 'find-files';
@@ -193,7 +194,9 @@ function SearchPalette({ options, close }: { options: PaletteOptions; close: () 
         <div className="palette-section">會議</div>
         {found.length ? (
           found.map((meeting, index) => (
-            <button
+            <Button
+              variant="ghost"
+              size="bare"
               key={meeting.id}
               id={`palette-result-${index}`}
               className={`palette-result ${active === index ? 'is-active' : ''}`}
@@ -217,7 +220,7 @@ function SearchPalette({ options, close }: { options: PaletteOptions; close: () 
                 {projectName(meeting)}
               </span>
               <kbd>Alt+{index + 1}</kbd>
-            </button>
+            </Button>
           ))
         ) : (
           <div className="palette-empty">
@@ -228,7 +231,9 @@ function SearchPalette({ options, close }: { options: PaletteOptions; close: () 
           <div className="palette-section palette-quick-heading">快速動作</div>
         )}
         {visibleQuick.map((action, index) => (
-          <button
+          <Button
+            variant="ghost"
+            size="bare"
             key={action.action}
             id={`palette-result-${found.length + index}`}
             className={`palette-result palette-quick ${active === found.length + index ? 'is-active' : ''}`}
@@ -247,7 +252,7 @@ function SearchPalette({ options, close }: { options: PaletteOptions; close: () 
             {icon(action.glyph)}
             <span className="palette-result-title">{action.label}</span>
             <kbd>{shortcutLabel(action.letter)}</kbd>
-          </button>
+          </Button>
         ))}
       </div>
       <p className="palette-announcement" role="status" aria-live="polite">

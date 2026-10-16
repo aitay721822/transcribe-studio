@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import type { Meeting, UiState } from '../../../domain/models';
 import { notify } from '../../layout/notifications';
+import { Button } from '../../primitives/button';
 import { Textarea } from '../../primitives/textarea';
 import { addImages, ImageAttachments, ImagePicker } from '../session/images';
 import { discardTemporary } from '../session/temporary';
 import { ComposerControls } from './controls';
 import { ReferenceChips } from './mentions/chips';
 import { useMentions } from './mentions/controller';
-import { MentionMenu } from './mentions/menu';
+import { isMentionFocusTarget, MentionMenu } from './mentions/menu';
 import { mentionToken } from './mentions/token';
 import { ReplyQuotes } from './quotes';
 
@@ -103,7 +104,9 @@ export function AgentInput({ state, meeting }: { state: UiState; meeting: Meetin
       {options.length > 0 && (
         <div className="slash-menu" role="listbox" id="agent-command-list" aria-label="Agent 指令">
           {options.map(([name, description], index) => (
-            <button
+            <Button
+              variant="ghost"
+              size="bare"
               type="button"
               role="option"
               aria-selected={index === selected}
@@ -114,7 +117,7 @@ export function AgentInput({ state, meeting }: { state: UiState; meeting: Meetin
             >
               <strong>{name}</strong>
               <span>{description}</span>
-            </button>
+            </Button>
           ))}
         </div>
       )}
@@ -149,7 +152,7 @@ export function AgentInput({ state, meeting }: { state: UiState; meeting: Meetin
         onSelect={(e) => mentions.update(e.currentTarget)}
         onCompositionEnd={(e) => mentions.update(e.currentTarget)}
         onBlur={(e) => {
-          if (!(e.relatedTarget as HTMLElement)?.closest('.mention-menu')) mentions.close();
+          if (!isMentionFocusTarget(e.relatedTarget)) mentions.close();
         }}
         onKeyDown={(e) => {
           if (e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229) return;

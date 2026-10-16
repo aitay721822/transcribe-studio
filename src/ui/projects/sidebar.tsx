@@ -1,6 +1,8 @@
 import { Fragment } from 'react';
 import type { Project, UiState } from '../../domain/models';
 import { icon } from '../components/icons';
+import { Button } from '../primitives/button';
+import { Disclosure, DisclosureTrigger } from '../primitives/disclosure';
 import { ProjectSidebarRow } from './row';
 
 export function projectSidebar(state: UiState) {
@@ -37,7 +39,9 @@ export function projectSidebar(state: UiState) {
           ''
         )}
         <div className="sidebar-label">
-          <button
+          <Button
+            variant="ghost"
+            size="bare"
             className="project-heading-menu"
             data-project-menu={selected?.id || ''}
             aria-label="專案下拉選單"
@@ -45,10 +49,10 @@ export function projectSidebar(state: UiState) {
             aria-expanded="false"
           >
             專案 {icon('down')}
-          </button>
-          <button aria-label="新增專案" data-action="new-project">
+          </Button>
+          <Button variant="ghost" size="bare" aria-label="新增專案" data-action="new-project">
             {icon('plus')}
-          </button>
+          </Button>
         </div>
         <div className="regular-projects">
           {groups ||
@@ -59,14 +63,16 @@ export function projectSidebar(state: UiState) {
             ))}
         </div>
       </div>
-      <details className="archived-projects" open={!!selected?.archivedAt}>
-        <summary>已封存專案（{state.projects.filter((p) => p.archivedAt).length}）</summary>
+      <Disclosure className="archived-projects" open={!!selected?.archivedAt}>
+        <DisclosureTrigger>
+          已封存專案（{state.projects.filter((p) => p.archivedAt).length}）
+        </DisclosureTrigger>
         {state.projects
           .filter((p) => p.archivedAt)
           .map((p, __index) => (
             <Fragment key={p.id}>{row(p, true)}</Fragment>
           ))}
-      </details>
+      </Disclosure>
     </>
   );
 }

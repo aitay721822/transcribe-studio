@@ -3,6 +3,7 @@ import type { TaskAction, TaskFilter } from '../../../domain/asr/tasks';
 import type { UiState } from '../../../domain/models';
 import { duration } from '../../components/display';
 import { Button } from '../../primitives/button';
+import { Checkbox } from '../../primitives/checkbox';
 import { TaskCard } from './card';
 import { ConnectionPanel } from './connections';
 import { useTaskClock, useTaskList } from './data';
@@ -10,6 +11,7 @@ import { TaskFilters } from './filters';
 
 export function AutoRecoveryToggle({ meetingId }: { meetingId: string }) {
   const [enabled, setEnabled] = useState(true);
+  const [pending, setPending] = useState(true);
   const [error, setError] = useState('');
   useEffect(() => {
     let alive = true;
@@ -20,6 +22,9 @@ export function AutoRecoveryToggle({ meetingId }: { meetingId: string }) {
       })
       .catch((error: unknown) => {
         if (alive) setError(error instanceof Error ? error.message : '無法取得補辨識設定');
+      })
+      .finally(() => {
+        if (alive) setPending(false);
       });
     return () => {
       alive = false;
@@ -28,17 +33,23 @@ export function AutoRecoveryToggle({ meetingId }: { meetingId: string }) {
   return (
     <div>
       <label className="check-line">
-        <input
-          type="checkbox"
+        <Checkbox
           checked={enabled}
-          onChange={(event) => {
-            const next = event.target.checked;
+          disabled={pending}
+          aria-busy={pending}
+          onCheckedChange={(checked) => {
+            const next = checked === true;
+            setEnabled(next);
+            setPending(true);
+            setError('');
             void window.studio
               .invoke('asr:auto-recovery', meetingId, next)
               .then(setEnabled)
-              .catch((error: unknown) =>
-                setError(error instanceof Error ? error.message : '設定失敗')
-              );
+              .catch((error: unknown) => {
+                setEnabled(enabled);
+                setError(error instanceof Error ? error.message : '設定失敗');
+              })
+              .finally(() => setPending(false));
           }}
         />
         自動建立斷線補辨識任務
@@ -104,6 +115,9 @@ export function TaskPanel({
     0
   );
   const selectedMeeting = meetingId || filter.meetingId;
+  let bulkChecked: boolean | 'indeterminate' = false;
+  if (page?.items.length && visibleSelected.length === page.items.length) bulkChecked = true;
+  else if (visibleSelected.length > 0) bulkChecked = 'indeterminate';
   return (
     <section className={`asr-task-panel ${compact ? 'compact' : ''}`} aria-label="辨識任務">
       <div className="asr-task-heading">
@@ -153,12 +167,12 @@ export function TaskPanel({
       {page && page.items.length > 0 && (
         <div className="asr-task-bulk">
           <label className="check-line">
-            <input
-              type="checkbox"
+            <Checkbox
               aria-label="選取本頁全部任務"
-              checked={page.items.every((task) => selected.has(task.id))}
-              onChange={(event) =>
-                setSelected(new Set(event.target.checked ? page.items.map((task) => task.id) : []))
+              checked={bulkChecked}
+              disabled={busy}
+              onCheckedChange={(checked) =>
+                setSelected(new Set(checked === true ? page.items.map((task) => task.id) : []))
               }
             />
             本頁全選

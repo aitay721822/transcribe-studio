@@ -10,6 +10,7 @@
 .project-sidebar-row .project-button {
   flex: 1;
   min-width: 0;
+  justify-content: flex-start;
   background: transparent;
   padding-right: 7px;
 }
@@ -53,9 +54,16 @@
   overflow: hidden;
 }
 .project-sidebar-row .project-name {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+/* Match the title after the 24px toggle, 3px padding, 15px folder and 9px gap. */
+.project-children .project-sub {
+  padding-left: 41px;
 }
 .project-row-actions {
   display: flex;

@@ -4,10 +4,13 @@ import type { UiState } from '../../../domain/models';
 import { icon } from '../../components/icons';
 import { notify } from '../../layout/notifications';
 import { invalidateUI } from '../../layout/roots';
+import { Button } from '../../primitives/button';
+import { Checkbox } from '../../primitives/checkbox';
 import { toggleTemporary } from './temporary';
 
 export function PermissionMenu({ state }: { state: UiState }) {
   const [pending, setPending] = useState(false);
+  const [requested, setRequested] = useState(false);
   const mode = state.agentMode || 'edit';
   const busy = !!state.runId || !!state.agentQueue?.length;
   return (
@@ -36,7 +39,9 @@ export function PermissionMenu({ state }: { state: UiState }) {
               ['read', '唯讀模式', '搜尋、閱讀與回答；不產生可套用的修訂'],
             ] as const
           ).map(([value, label, description]) => (
-            <button
+            <Button
+              variant="ghost"
+              size="bare"
               type="button"
               key={value}
               className="permission-option"
@@ -53,22 +58,23 @@ export function PermissionMenu({ state }: { state: UiState }) {
                 <span>{description}</span>
               </span>
               {mode === value ? icon('check') : null}
-            </button>
+            </Button>
           ))}
           <label className="temporary-toggle">
             <span>
               <strong>暫時對話</strong>
               <span>離開會議工作區即清除對話與附件</span>
             </span>
-            <input
-              type="checkbox"
+            <Checkbox
               aria-label="暫時對話"
-              checked={!!state.temporaryChat}
+              checked={pending ? requested : !!state.temporaryChat}
               disabled={pending || busy}
-              onChange={async (event) => {
+              aria-busy={pending}
+              onCheckedChange={async (checked) => {
+                setRequested(checked === true);
                 setPending(true);
                 try {
-                  await toggleTemporary(state, event.target.checked);
+                  await toggleTemporary(state, checked === true);
                 } catch (caughtE) {
                   const e = caughtE instanceof Error ? caughtE : new Error(String(caughtE));
 

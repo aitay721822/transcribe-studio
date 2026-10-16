@@ -7,6 +7,7 @@ import {
   useState,
 } from 'react';
 import { Group, Panel, Separator, usePanelRef } from 'react-resizable-panels';
+import { Button } from '../primitives/button';
 import { SetupScreen } from '../setup/screen';
 import { renderNodeInto, useUiRevision } from './roots';
 
@@ -192,7 +193,9 @@ function Shell(content: ShellContent) {
         </Panel>
       </Group>
       {compact && drawerOpen && (
-        <button
+        <Button
+          variant="ghost"
+          size="bare"
           className="navigation-backdrop"
           tabIndex={-1}
           aria-label="關閉專案側欄"
