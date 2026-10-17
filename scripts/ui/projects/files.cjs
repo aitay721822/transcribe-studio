@@ -120,8 +120,10 @@ async function main() {
     page.on('pageerror', (e) => errors.push(e.message));
     await require('../setup/helpers.cjs').overview(page);
     await page.locator(`[data-meeting="${meeting.id}"]`).first().click();
-    assert.equal(await page.locator('[data-source-tab="files"]').count(), 0);
     const input = page.locator('#agent-input');
+    // Meeting loading completes after the navigation click; count() does not wait for React.
+    await input.waitFor({ state: 'visible' });
+    assert.equal(await page.locator('[data-source-tab="files"]').count(), 0);
     assert.equal(await page.locator('.agent-input-wrap #skill-select-trigger').count(), 1);
     assert.equal(await page.locator('.agent-input-wrap #agent-send-actions').count(), 1);
     const card = await page.locator('.agent-input-wrap').boundingBox();
