@@ -6,6 +6,7 @@ const path = require('node:path');
 const { Agent } = require('../dist/harness/coordinator.cjs');
 const { ClaudeAdapter } = require('../dist/ai/adapters/claude.cjs');
 const { Store, DEFAULTS } = require('../dist/persistence/store.cjs');
+const { claudeCli } = require('./fixtures/claude-cli.cjs');
 
 const configure = (store, backend) => {
   const s = structuredClone(DEFAULTS);
@@ -293,6 +294,10 @@ test('real Claude CLI -p executes the meeting MCP gateway against a local mock A
   const p = store.createProject('local');
   const m = store.createMeeting(p.id, 'local');
   configure(store, 'claude');
+  store.saveSettings({
+    ...store.settings(),
+    llm: { ...store.settings().llm, claudePath: claudeCli() },
+  });
   const agent = new Agent(
     store,
     path.join(__dirname, '../skills'),

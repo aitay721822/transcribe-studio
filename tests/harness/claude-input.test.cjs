@@ -6,6 +6,7 @@ const os = require('node:os');
 const { Agent } = require('../../dist/harness/coordinator.cjs');
 const { ClaudeAdapter } = require('../../dist/ai/adapters/claude.cjs');
 const { Store, DEFAULTS } = require('../../dist/persistence/store.cjs');
+const { claudeCli } = require('../fixtures/claude-cli.cjs');
 
 const deferred = () => {
   let resolve;
@@ -51,6 +52,7 @@ for (const heldRequest of [1, 2])
     settings.llm.backend = 'claude';
     settings.llm.claudeKey = 'test';
     settings.llm.claudeModel = 'test';
+    settings.llm.claudePath = claudeCli();
     store.saveSettings(settings);
     const events = [];
     const image = {
@@ -73,7 +75,14 @@ for (const heldRequest of [1, 2])
     );
     try {
       const run = agent.run({ meetingId: m.id, instruction: 'first instruction', images: [image] });
-      await entered.promise;
+      await Promise.race([
+        entered.promise,
+        run.then((completed) =>
+          assert.fail(
+            `Claude finished before reaching the mock API: ${JSON.stringify(completed.events)}`
+          )
+        ),
+      ]);
       const result = await agent.submit(
         { meetingId: m.id, instruction: 'STEER_FOLLOWUP_INCLUDE_OWNER', images: [image] },
         'steer',
