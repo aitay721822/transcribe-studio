@@ -93,6 +93,16 @@ async function main() {
     env,
   });
   try {
+    await app.evaluate(({ app, systemPreferences }) => {
+      if (!app.commandLine.hasSwitch('use-fake-device-for-media-stream'))
+        throw new Error('Recovery integration requires a synthetic microphone');
+      if (process.platform !== 'darwin') return;
+      // Chromium's fake microphone does not grant macOS TCC permission. Only this
+      // synthetic-media suite supplies consent; production permission checks stay intact.
+      const status = systemPreferences.getMediaAccessStatus.bind(systemPreferences);
+      systemPreferences.getMediaAccessStatus = (kind) =>
+        kind === 'microphone' ? 'granted' : status(kind);
+    });
     page = await require('../setup/helpers.cjs').desktopWindow(app);
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
@@ -114,11 +124,13 @@ async function main() {
       await page.locator(`[data-project="${project.id}"]`).click();
       await page.locator('[data-action="project-live"]').click();
       await page.waitForFunction(() => !document.querySelector('#audio-device')?.disabled);
+      await page.locator('#audio-device-playback').selectOption('none');
       await page.locator('#audio-device').selectOption('mic:');
       await page.locator('#record-only').setChecked(recordOnly);
       await page.locator('[data-action="new-meeting"]').click();
       await page.locator('#name-input').fill(title);
       await page.locator('#name-confirm').click();
+      await page.locator('[data-action="stop-recording"]').waitFor();
     };
 
     await record('WebSocket 故障恢復');
