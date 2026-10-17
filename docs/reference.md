@@ -20,7 +20,7 @@ npm run test:ui
 npm run package
 ```
 
-`npm start` 先將 TypeScript 編譯至 dist，再啟動 Electron。`npm run package` 產生 Windows x64 安裝程式 `release/Transcribe Studio Setup 0.4.2.exe`，支援繁體中文／英文、選擇安裝位置、桌面及開始功能表捷徑，並註冊 Windows 解除安裝。預設安裝給目前使用者，也可選擇所有使用者；解除安裝保留會議資料與設定。`npm run check` 執行 Biome 格式與 lint 檢查（禁止 `any`／`@ts-ignore`）、TypeScript 檢查（`noImplicitAny`、`useUnknownInCatchVariables`）與來源結構驗證：每個文字來源檔最多 500 行，每個來源資料夾最多 10 個檔案／10 個子資料夾。`npm run lint` 執行 Biome 建議的 style 規則（警告也會失敗），並檢查 import 區塊後、函式與方法之間恰好一個空白列；字串插值使用 template literal，數值加法保留。`npm run format` 同時自動整理這些間距，並依 `config/biome.json` 格式化 TypeScript、JavaScript、CSS 與 JSON；排除相依套件、編譯產物與 lockfile。應用未設定 code signing。
+`npm start` 先將 TypeScript 編譯至 dist，再啟動 Electron。`npm run package` 產生 Windows x64 安裝程式 `release/Transcribe Studio Setup 0.4.3.exe`，支援繁體中文／英文、選擇安裝位置、桌面及開始功能表捷徑，並註冊 Windows 解除安裝。預設安裝給目前使用者，也可選擇所有使用者；解除安裝保留會議資料與設定。`npm run check` 執行 Biome 格式與 lint 檢查（禁止 `any`／`@ts-ignore`）、TypeScript 檢查（`noImplicitAny`、`useUnknownInCatchVariables`）與來源結構驗證：每個文字來源檔最多 500 行，每個來源資料夾最多 10 個檔案／10 個子資料夾。`npm run lint` 執行 Biome 建議的 style 規則（警告也會失敗），並檢查 import 區塊後、函式與方法之間恰好一個空白列；字串插值使用 template literal，數值加法保留。`npm run format` 同時自動整理這些間距，並依 `config/biome.json` 格式化 TypeScript、JavaScript、CSS 與 JSON；排除相依套件、編譯產物與 lockfile。應用未設定 code signing。
 
 UI 全面改為 React／TSX，包含頁面、dialog、搜尋、選單與設定導覽；使用 Tailwind v4 與 shadcn/ui 的 Button、Input、Textarea、Checkbox、Progress、Slider（Radix），以及 React 可搜尋 Select。共用語意色彩對應晨光、夜間、森林、海灣、石墨、暖砂、玫瑰與紫藤八款主題，並可跟隨系統，保留透明模糊與 rounded layout。欄位驗證錯誤統一使用 error 語意紅色，隨目前主題切換。會議來源面板至少 300px、Agent 面板至少 360px、會議紀錄至少 360px，空間不足時上下排列；標題、分頁與快捷操作維持單行。側欄品牌僅顯示 icon，語音辨識分頁外框與 Tab 按鈕皆採圓角。設定在 `src/ui/components.json`；可用 `npx shadcn@latest info --cwd src/ui` 檢查元件與解析路徑。Tailwind CSS 由 PostCSS 於建置時編譯，不使用 CDN。可見操作按鈕共用 Button；收合區塊使用統一的箭頭與焦點樣式並保留原生鍵盤語意。錄音播放器採用相同元件，提供播放／暫停、進度拖曳、音量、靜音及倍速；參考路徑欄位也使用共用 Input 與可搜尋 Select。
 
@@ -167,19 +167,19 @@ DeepWiki 查詢公開 `openai/codex` 未找到桌面 UI 的材質實作，不能
 
 本次範圍為憑證加密；其他會議與對話資料保留既有儲存格式。
 
-| 類別 | 位置／處理 | 狀態 |
-| --- | --- | --- |
-| OpenAI、Claude、即時／離線 ASR API key | `studio.sqlite` 的整份 settings 記錄 | 作業系統加密，UI 的 key 欄位回傳遮罩 |
-| 自訂驗證 headers、TURN 密碼、MCP env／args／URL | 同一份加密 settings | 已涵蓋，不依欄位名稱判斷是否加密 |
-| URL query token、ASR init／audioEnvelope 中的憑證 | 同一份加密 settings | 已補齊舊版未涵蓋欄位 |
-| 錯誤訊息、Agent 工具參數與 output | UI 事件及新增 JSONL 事件 | 遮罩已知設定／環境憑證與可辨識 token；保留非敏感工具明細 |
-| 專案名稱、工作區路徑、逐字稿、筆記、標記、版本歷史 | `studio.sqlite` | 未加密，可能包含個資或機密 |
-| 聊天、工具讀取內容、提案、壓縮摘要、session 綁定 | `conversations/*.jsonl` | 未加密；清空對話不刪除原始歷史 |
-| 一般對話圖片及錄音 | `attachments/`、`audio/` | 未加密 |
-| 音訊轉檔／降噪的 PCM 暫存 | 系統暫存目錄 `studio-audio-work-*` | 未加密，正常完成／取消會清理；異常終止可能殘留 |
-| 原生 CLI session 與登入資料 | 應用 runtime／CLI 自有目錄或系統金鑰圈 | 由 CLI 管理，未宣稱受到 Studio 設定加密保護 |
-| 匯出 DOCX、剪貼簿、外部工作區來源文件 | 使用者指定檔案、系統剪貼簿與來源資料夾 | 未加密；不修改來源文件 |
-| 本機 UI 偏好 | Chromium localStorage | 僅側欄／分隔比例、收合、裝置 ID 與降噪選項，未儲存服務憑證 |
+| 類別                                               | 位置／處理                             | 狀態                                                       |
+| -------------------------------------------------- | -------------------------------------- | ---------------------------------------------------------- |
+| OpenAI、Claude、即時／離線 ASR API key             | `studio.sqlite` 的整份 settings 記錄   | 作業系統加密，UI 的 key 欄位回傳遮罩                       |
+| 自訂驗證 headers、TURN 密碼、MCP env／args／URL    | 同一份加密 settings                    | 已涵蓋，不依欄位名稱判斷是否加密                           |
+| URL query token、ASR init／audioEnvelope 中的憑證  | 同一份加密 settings                    | 已補齊舊版未涵蓋欄位                                       |
+| 錯誤訊息、Agent 工具參數與 output                  | UI 事件及新增 JSONL 事件               | 遮罩已知設定／環境憑證與可辨識 token；保留非敏感工具明細   |
+| 專案名稱、工作區路徑、逐字稿、筆記、標記、版本歷史 | `studio.sqlite`                        | 未加密，可能包含個資或機密                                 |
+| 聊天、工具讀取內容、提案、壓縮摘要、session 綁定   | `conversations/*.jsonl`                | 未加密；清空對話不刪除原始歷史                             |
+| 一般對話圖片及錄音                                 | `attachments/`、`audio/`               | 未加密                                                     |
+| 音訊轉檔／降噪的 PCM 暫存                          | 系統暫存目錄 `studio-audio-work-*`     | 未加密，正常完成／取消會清理；異常終止可能殘留             |
+| 原生 CLI session 與登入資料                        | 應用 runtime／CLI 自有目錄或系統金鑰圈 | 由 CLI 管理，未宣稱受到 Studio 設定加密保護                |
+| 匯出 DOCX、剪貼簿、外部工作區來源文件              | 使用者指定檔案、系統剪貼簿與來源資料夾 | 未加密；不修改來源文件                                     |
+| 本機 UI 偏好                                       | Chromium localStorage                  | 僅側欄／分隔比例、收合、裝置 ID 與降噪選項，未儲存服務憑證 |
 
 加密設定採 `protected-settings:v2:` 格式，使用作業系統帳戶的 safeStorage 金鑰，不在應用目錄另存解密密碼。
 啟動時自動遷移舊版明文／個別欄位加密設定，完成後啟用 SQLite secure_delete、清空 WAL 並 VACUUM，清理目前資料庫中的舊明文頁面。

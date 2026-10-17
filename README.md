@@ -14,10 +14,10 @@ Transcribe Studio 是以專案為中心的桌面會議記錄助手，使用 Type
 
 > 截圖使用獨立示範資料，展示 Windows 桌面介面。
 
-| 平台 | 支援範圍 |
-| --- | --- |
-| Windows | x64 安裝版；可擷取指定播放裝置與麥克風 |
-| macOS | Apple Silicon（arm64），macOS 13 以上；原生系統音訊需 macOS 14.2 以上 |
+| 平台    | 支援範圍                                                              |
+| ------- | --------------------------------------------------------------------- |
+| Windows | x64 安裝版；可擷取指定播放裝置與麥克風                                |
+| macOS   | Apple Silicon（arm64），macOS 13 以上；原生系統音訊需 macOS 14.2 以上 |
 
 macOS 的實際權限、音訊裝置與正式簽章仍需實機驗收。辨識品質取決於錄音與所選模型。
 
@@ -27,10 +27,10 @@ macOS 的實際權限、音訊裝置與正式簽章仍需實機驗收。辨識�
 
 前往 [GitHub Releases](https://github.com/aitay721822/transcribe-studio/releases)，若該版本已發布，依平台下載對應檔案。
 
-| 平台 | 檔案 | 使用方式 |
-| --- | --- | --- |
+| 平台        | 檔案                                 | 使用方式                             |
+| ----------- | ------------------------------------ | ------------------------------------ |
 | Windows x64 | `Transcribe Studio Setup <版本>.exe` | 執行安裝程式，可選安裝位置並建立捷徑 |
-| macOS arm64 | `.dmg` | 開啟 DMG 將應用程式拖入 Applications |
+| macOS arm64 | `.dmg`                               | 開啟 DMG 將應用程式拖入 Applications |
 
 一般本機建置未簽章／公證；正式 Mac 發布可透過簽章與公證流程產生套件。Windows 解除安裝會保留會議資料與設定。
 
@@ -76,28 +76,28 @@ npm run package:mac
 
 ### 使用 tag 發布版本
 
-版本 tag 須與 `package.json` 一致，例如目前版本為 `0.4.2`：
+版本 tag 須與 `package.json` 一致，例如目前版本為 `0.4.3`：
 
 ```sh
-git tag -a v0.4.2 -m "Release 0.4.2"
-git push origin v0.4.2
+git tag -a v0.4.3 -m "Release 0.4.3"
+git push origin v0.4.3
 ```
 
-推送 `v0.4.2` 或 `0.4.2` 形式的 tag 後，GitHub Actions 會驗證版本、執行測試並建置 Windows 安裝程式與 Mac arm64 DMG。兩個平台皆成功後，才會在 [Releases](https://github.com/aitay721822/transcribe-studio/releases) 建立版本頁、上傳兩個安裝檔與 `SHA256SUMS.txt`，並產生版本說明。帶有 `-beta.1` 等後綴的版本會標示為預先發布。
+推送 `v0.4.3` 或 `0.4.3` 形式的 tag 後，GitHub Actions 會驗證版本、執行測試並建置 Windows 安裝程式與 Mac arm64 DMG。兩個平台皆成功後，才會在 [Releases](https://github.com/aitay721822/transcribe-studio/releases) 建立版本頁、上傳兩個安裝檔與 `SHA256SUMS.txt`，並產生版本說明。帶有 `-beta.1` 等後綴的版本會標示為預先發布。
 
 Tag 發布預設不使用 Mac 簽章憑證；有正式簽章需求時，使用手動 workflow 的 `signed_release` 流程。分支與 PR 驗證不會建立 Release。
 
 ### 開發檢查
 
-| 指令 | 用途 |
-| --- | --- |
-| `npm run format` | 整理格式、匯入與宣告間距 |
-| `npm run check` | 檢查格式、型別與來源結構 |
-| `npm run lint` | 執行 Biome lint 與間距檢查 |
-| `npm test` | 建置後執行自動測試 |
-| `npm run test:ui` | 執行 Electron 完整介面測試 |
+| 指令                       | 用途                       |
+| -------------------------- | -------------------------- |
+| `npm run format`           | 整理格式、匯入與宣告間距   |
+| `npm run check`            | 檢查格式、型別與來源結構   |
+| `npm run lint`             | 執行 Biome lint 與間距檢查 |
+| `npm test`                 | 建置後執行自動測試         |
+| `npm run test:ui`          | 執行 Electron 完整介面測試 |
 | `npm run test:ui:platform` | 驗證平台介面與系統憑證加密 |
-| `npm run test:packaged` | 驗證已封裝應用程式 |
+| `npm run test:packaged`    | 驗證已封裝應用程式         |
 
 專案使用 `.gitattributes` 統一 LF 換行。既有 Windows 工作目錄若出現 Biome 換行錯誤，先執行 `npm run format`，再執行 `npm run check`。
 
