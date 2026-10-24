@@ -147,7 +147,12 @@ class AsrSession {
       c.provider === 'openai'
         ? { ...(c.apiKey ? { Authorization: `Bearer ${c.apiKey}` } : {}), ...c.headers }
         : c.headers;
-    this.ws = new WebSocket(url, { headers, handshakeTimeout: 15000, maxPayload: 2 * 1024 * 1024 });
+    this.ws = new WebSocket(url, {
+      headers,
+      handshakeTimeout: 15000,
+      maxPayload: 2 * 1024 * 1024,
+      ...(c.disablePerMessageDeflate === true ? { perMessageDeflate: false } : {}),
+    });
     this.ws.on('unexpected-response', (_request, response) => {
       const value = response.headers['retry-after'];
       const failure = httpFailure(

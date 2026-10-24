@@ -4,6 +4,7 @@ import type { FailureInfo } from './retry';
 export interface AsrSettings {
   provider: string;
   realtimeFlavor?: string;
+  disablePerMessageDeflate?: boolean;
   url: string;
   model: string;
   fileModel?: string;

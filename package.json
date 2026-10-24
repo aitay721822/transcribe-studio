@@ -1,6 +1,6 @@
 {
   "name": "transcribe-studio",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "description": "Project-based meeting assistant with streaming ASR and agent revisions",
   "main": "dist/main.cjs",
   "author": "Transcribe Studio",

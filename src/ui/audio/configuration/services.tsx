@@ -202,6 +202,19 @@ export function SpeechServices({
             '官方 OpenAI 必填；自架服務依其驗證要求填寫。'
           )}
           {field('即時辨識模型', 'model', c.model || '')}
+          <div className="field full">
+            <label className="check-line">
+              <Checkbox
+                id={id('disable-per-message-deflate')}
+                defaultChecked={c.disablePerMessageDeflate === true}
+              />
+              停用 WebSocket 訊息壓縮
+            </label>
+            <small>
+              勾選後，建立連線時設定 perMessageDeflate:
+              false；未勾選則使用預設連線設定。下次連線時生效。
+            </small>
+          </div>
           {field(
             '即時驗證 Headers（JSON）',
             'headers',

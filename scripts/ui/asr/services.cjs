@@ -32,6 +32,8 @@ async function main() {
     assert.equal(await page.locator('#setup-asr-realtime-enabled').isChecked(), false);
     assert.equal(await page.locator('#setup-asr-url').isVisible(), false);
     await realtimeTab.click();
+    assert.equal(await page.locator('#setup-asr-disable-per-message-deflate').isChecked(), false);
+    await page.locator('#setup-asr-disable-per-message-deflate').check();
     await page.locator('#setup-asr-url').fill(service.live);
     await page.locator('#setup-asr-key').fill('realtime-test-key');
     await page.locator('#setup-asr-model').fill('local-realtime-model');
@@ -48,6 +50,7 @@ async function main() {
     await page.keyboard.press('ArrowRight');
     assert.equal(await realtimeTab.getAttribute('aria-selected'), 'true');
     await page.locator('#setup-asr-flavor').selectOption('vllm');
+    assert.equal(await page.locator('#setup-asr-disable-per-message-deflate').isChecked(), true);
     assert.equal(await realtimeTab.getAttribute('aria-selected'), 'true');
     assert.equal(await page.locator('#setup-asr-model').inputValue(), 'local-realtime-model');
     await page.locator('#setup-asr-realtime-enabled').uncheck();
@@ -192,11 +195,18 @@ async function main() {
     );
     await realtimeTab.click();
     await page.locator('#asr-realtime-enabled').check();
+    assert.equal(await page.locator('#asr-disable-per-message-deflate').isChecked(), true);
+    await page.locator('#asr-disable-per-message-deflate').uncheck();
     await page.locator('[data-action="save-settings"]').click();
     await page.getByText('設定已儲存', { exact: true }).waitFor();
     assert.equal(
       (await page.evaluate(() => window.studio.invoke('bootstrap'))).settings.asr.provider,
       'openai'
+    );
+    assert.equal(
+      (await page.evaluate(() => window.studio.invoke('bootstrap'))).settings.asr
+        .disablePerMessageDeflate,
+      false
     );
     await page.locator('#asr-realtime-enabled').uncheck();
     await page.locator('#asr-url').fill('');

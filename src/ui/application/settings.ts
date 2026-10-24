@@ -34,6 +34,7 @@ export function createSettingsController(host: UiRuntime) {
         fileHeaders: json('asr-file-headers'),
         chunkSeconds: Number(value('asr-chunk-seconds')),
         realtimeFlavor: value('asr-flavor'),
+        disablePerMessageDeflate: checkboxChecked('asr-disable-per-message-deflate'),
         language: value('asr-language'),
         url: value('asr-url'),
         headers: json('asr-headers'),

@@ -201,6 +201,7 @@ export function SetupWizard({ settings, host }: SetupProps) {
       a.url = value('asr-url')?.trim();
       a.language = value('asr-language')?.trim();
       a.realtimeFlavor = value('asr-flavor');
+      a.disablePerMessageDeflate = checkboxChecked('setup-asr-disable-per-message-deflate');
       a.chunkSeconds = Number(value('asr-chunk-seconds'));
       a.fileHeaders = JSON.parse(value('asr-file-headers') || '{}');
       a.headers = JSON.parse(value('asr-headers') || '{}');

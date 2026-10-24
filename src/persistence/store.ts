@@ -37,6 +37,7 @@ export const DEFAULTS: Settings = {
   asr: {
     provider: 'transcriptions',
     realtimeFlavor: 'openai',
+    disablePerMessageDeflate: false,
     url: 'wss://api.openai.com/v1/realtime?intent=transcription',
     model: 'gpt-live-transcribe',
     fileModel: 'whisper-1',
