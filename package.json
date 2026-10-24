@@ -1,6 +1,6 @@
 {
   "name": "transcribe-studio",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "Project-based meeting assistant with streaming ASR and agent revisions",
   "main": "dist/main.cjs",
   "author": "Transcribe Studio",
@@ -118,6 +118,7 @@
       "entitlements": "config/platform/mac.entitlements.plist",
       "entitlementsInherit": "config/platform/mac.entitlements.plist",
       "extendInfo": {
+        "NSLocalNetworkUsageDescription": "連線至您設定的區域網路 AI API 與語音辨識服務。",
         "NSMicrophoneUsageDescription": "擷取麥克風以錄製會議與辨識語音。",
         "NSAudioCaptureUsageDescription": "擷取電腦播放的聲音以錄製會議與辨識語音。"
       },

@@ -65,6 +65,24 @@ test('connection drafts resolve stored masked keys without mutation and redact p
   assert.throws(() => connectionSettings({ asr: { headers: ['bad'] } }, saved), /headers/);
 });
 
+test('macOS fetch diagnostics retain nested socket causes, redact secrets and explain LAN permission', () => {
+  const settings = structuredClone(DEFAULTS);
+  settings.llm.apiKey = 'private-api-key';
+  const socket = Object.assign(new Error('connect private-api-key'), { code: 'EHOSTUNREACH' });
+  const error = new TypeError('fetch failed', {
+    cause: new AggregateError([socket], 'All connection attempts failed'),
+  });
+  const result = diagnosticError(error, settings, 'darwin');
+  assert.match(result, /fetch failed/);
+  assert.match(result, /EHOSTUNREACH/);
+  assert.match(result, /隱私權與安全性 → 區域網路/);
+  assert.equal(result.includes('private-api-key'), false);
+  assert.doesNotMatch(diagnosticError(error, settings, 'win32'), /macOS/);
+  assert.equal(diagnosticError(new Error('HTTP 401'), settings, 'darwin'), 'HTTP 401');
+  socket.cause = error;
+  assert.ok(diagnosticError(error, settings, 'darwin').length < 1500);
+});
+
 test('ASR tests stream audio, normalize final words, reject oversized chunks and release on failure/cancel', async () => {
   const server = new WebSocketServer({ port: 0, host: '127.0.0.1' });
   await new Promise((r) => server.once('listening', r));

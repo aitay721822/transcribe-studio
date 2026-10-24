@@ -39,6 +39,7 @@ test('macOS packaging requires Apple Silicon, a Mac host and release signing', (
   for (const target of build.mac.target) assert.deepEqual(target.arch, ['arm64']);
 
   assert.ok(build.mac.extendInfo.NSMicrophoneUsageDescription);
+  assert.match(build.mac.extendInfo.NSLocalNetworkUsageDescription, /區域網路/);
   assert.ok(build.mac.extendInfo.NSAudioCaptureUsageDescription);
   assert.equal(build.mac.minimumSystemVersion, '13.0');
   assert.equal(build.mac.hardenedRuntime, true);

@@ -1,4 +1,5 @@
 import type { Settings } from '../../domain/models';
+import { errorMessage, record } from '../../domain/value';
 import { credentialRedactor } from '../security/redaction';
 
 /** Draft tests reuse masked stored secrets without saving or revealing them. */
@@ -35,8 +36,34 @@ export function connectionSettings(draft: Partial<Settings>, saved: Settings): S
   return settings;
 }
 
-export function diagnosticError(error: unknown, settings: Settings): string {
-  return credentialRedactor(settings)
-    .text(String((error as Error)?.message || error))
-    .slice(0, 1500);
+export function diagnosticError(
+  error: unknown,
+  settings: Settings,
+  platform: NodeJS.Platform = process.platform
+): string {
+  const details: string[] = [],
+    pending: unknown[] = [error],
+    seen = new Set<unknown>();
+  // Node fetch stores socket failures in cause, sometimes inside an AggregateError.
+  for (let i = 0; i < pending.length && i < 16; i++) {
+    const current = pending[i];
+    if (seen.has(current)) continue;
+    seen.add(current);
+    const item = record(current);
+    const message = typeof item.message === 'string' ? item.message : errorMessage(current);
+    const code = typeof item.code === 'string' ? item.code : '';
+    const detail = code ? `${code}: ${message}` : message;
+    if (detail && !details.includes(detail)) details.push(detail);
+    if (item.cause !== undefined) pending.push(item.cause);
+    if (Array.isArray(item.errors)) pending.push(...item.errors);
+  }
+  const message = credentialRedactor(settings).text(details.join('；')).slice(0, 1100);
+  if (
+    platform === 'darwin' &&
+    /fetch failed|EHOSTUNREACH|ENETUNREACH|ECONNREFUSED|ETIMEDOUT|EPERM|EACCES|ERR_NETWORK_ACCESS_DENIED/i.test(
+      message
+    )
+  )
+    return `${message}\n若服務位於區域網路，請至 macOS「系統設定 → 隱私權與安全性 → 區域網路」允許 Transcribe Studio，然後重新開啟程式再測試。`;
+  return message;
 }
